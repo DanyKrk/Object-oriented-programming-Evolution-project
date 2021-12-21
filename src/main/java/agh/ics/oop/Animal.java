@@ -2,9 +2,13 @@ package agh.ics.oop;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Animal extends AbstractWorldMapElement{
+
+    private final int numberOfGenes = 32;
+    private final int genesRange = 8;
 
     private String northImageName = "src/main/resources/pig_up.png";
     private String southImageName = "src/main/resources/pig_down.png";
@@ -15,7 +19,13 @@ public class Animal extends AbstractWorldMapElement{
 
     private MapDirection orientation = MapDirection.NORTH;
 
+    private int energy;
+
+    private int[] genes;
+
     private List<IPositionChangeObserver> observers = new ArrayList<>();
+
+
 
     public Animal(IWorldMap map, Vector2d initialPosition){
        super(initialPosition);
@@ -23,18 +33,7 @@ public class Animal extends AbstractWorldMapElement{
     }
 
     @Override public String toString() {
-        switch(this.orientation){
-            case NORTH:
-                return "N";
-            case EAST:
-                return "E";
-            case SOUTH:
-                return "S";
-            case WEST:
-                return "W";
-            default:
-                return "Error!!!";
-        }
+        return orientation.toString();
     }
 
     public void move(MoveDirection direction){
@@ -113,4 +112,70 @@ public class Animal extends AbstractWorldMapElement{
         return "A" + this.getPosition().toString();
     }
 
+    public int getEnergy() {
+        return energy;
+    }
+
+    public int[] getGenes() {
+        return genes;
+    }
+
+    public void setRandomGenes(){
+        this.genes = new int[numberOfGenes];
+        for(int gene:genes){
+            gene = ((int)(Math.random() * 100)) % genesRange;
+        }
+        Arrays.sort(genes);
+    }
+
+    public void setGenesBasedOnParents(Animal parent1, Animal parent2){
+        this.genes = new int[numberOfGenes];
+        Animal strongerParent;
+        Animal weakerParent;
+
+        if (parent1.getEnergy() >= parent2.getEnergy()){
+            strongerParent = parent1;
+            weakerParent = parent2;
+        }
+        else {
+            strongerParent = parent2;
+            weakerParent = parent1;
+        }
+
+        int[] strongerGenes = strongerParent.getGenes();
+        int[] weakerGenes = weakerParent.getGenes();
+        int strongerParentEnergy = strongerParent.getEnergy();
+        int weakerParentEnergy = weakerParent.getEnergy();
+
+        boolean takesLeftSideGenesFromStrongerParent = Math.random() < 0.5;
+
+        if (takesLeftSideGenesFromStrongerParent){
+            int borderID = (numberOfGenes - 1) * strongerParentEnergy / (strongerParentEnergy + weakerParentEnergy);
+            for (int i = 0; i <= borderID; i++){
+                this.genes[i] = strongerGenes[i];
+            }
+            for (int i = borderID + 1; i < numberOfGenes; i++){
+                this.genes[i] = weakerGenes[i];
+            }
+        }
+        else {
+            int borderID = (numberOfGenes - 1) * weakerParentEnergy / (strongerParentEnergy + weakerParentEnergy);
+            for (int i = 0; i <= borderID; i++){
+                this.genes[i] = weakerGenes[i];
+            }
+            for (int i = borderID + 1; i < numberOfGenes; i++){
+                this.genes[i] = strongerGenes[i];
+            }
+        }
+
+        Arrays.sort(this.genes);
+    }
+
+    public void setGenes(int[] inputGenes){
+        this.genes = Arrays.copyOf(inputGenes,numberOfGenes);
+    }
+
+    public void setEnergy(int inputEnergy){
+        this.energy = inputEnergy;
+    }
 }
