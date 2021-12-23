@@ -5,19 +5,38 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Animal extends AbstractWorldMapElement{
-
+public class Animal extends AbstractWorldMapElement implements Comparable{
+    private final int startEnergy = 15;
     private final int numberOfGenes = 32;
     private final int genesRange = 8;
+    private final MoveDirection[] moveDirections = {
+            MoveDirection.FORWARD,
+            MoveDirection.RIGHTFORWARD,
+            MoveDirection.RIGHT,
+            MoveDirection.RIGHTBACKWARD,
+            MoveDirection.BACKWARD,
+            MoveDirection.LEFTBACKWARD,
+            MoveDirection.LEFT,
+            MoveDirection.LEFTFORWARD};
+    private final MapDirection[] mapDirections = {
+            MapDirection.NORTH,
+            MapDirection.NORTHEAST,
+            MapDirection.EAST,
+            MapDirection.SOUTHEAST,
+            MapDirection.SOUTH,
+            MapDirection.SOUTHWEST,
+            MapDirection.WEST,
+            MapDirection.NORTHWEST
+    };
 
     private String northImageName = "src/main/resources/pig_up.png";
     private String southImageName = "src/main/resources/pig_down.png";
     private String eastImageName = "src/main/resources/pig_right.png";
     private String westImageName = "src/main/resources/pig_left.png";
 
-    public final IWorldMap map;
+    public final AbstractWorldMap map;
 
-    private MapDirection orientation = MapDirection.NORTH;
+    private MapDirection orientation;
 
     private int energy;
 
@@ -27,27 +46,51 @@ public class Animal extends AbstractWorldMapElement{
 
 
 
-    public Animal(IWorldMap map, Vector2d initialPosition){
+    public Animal(AbstractWorldMap map, Vector2d initialPosition){
        super(initialPosition);
        this.map = map;
+       this.orientation = getRandomMapDirection();
+       this.addObserver(this.map);
     }
 
     @Override public String toString() {
         return orientation.toString();
     }
 
-    public void move(MoveDirection direction){
+    public void move(){
         Vector2d newPosition = this.position;
         Vector2d oldPosition = this.position;
 
+        MoveDirection direction = getRandomMoveDirectionBasedOnGenes();
+
         switch (direction) {
-            case RIGHT -> {
+            case RIGHTFORWARD -> {
                 this.orientation = orientation.next();
                 positionChanged(oldPosition, newPosition);
                 return;
             }
-            case LEFT -> {
+            case RIGHT -> {
+                this.orientation = orientation.next().next();
+                positionChanged(oldPosition, newPosition);
+                return;
+            }
+            case RIGHTBACKWARD -> {
+                this.orientation = orientation.next().next().next();
+                positionChanged(oldPosition, newPosition);
+                return;
+            }
+            case LEFTFORWARD -> {
                 this.orientation = orientation.previous();
+                positionChanged(oldPosition,newPosition);
+                return;
+            }
+            case LEFT -> {
+                this.orientation = orientation.previous().previous();
+                positionChanged(oldPosition,newPosition);
+                return;
+            }
+            case LEFTBACKWARD -> {
+                this.orientation = orientation.previous().previous().previous();
                 positionChanged(oldPosition,newPosition);
                 return;
             }
@@ -59,6 +102,18 @@ public class Animal extends AbstractWorldMapElement{
         }
         this.position = newPosition;
         positionChanged(oldPosition,newPosition);
+    }
+
+    private MoveDirection getRandomMoveDirectionBasedOnGenes() {
+        int directionID = genes[getRandomNumberFrom0ToN(numberOfGenes)];
+        MoveDirection direction = moveDirections[directionID];
+        return direction;
+    }
+
+    private MapDirection getRandomMapDirection() {
+        int directionID = getRandomNumberFrom0ToN(genesRange);
+        MapDirection direction = mapDirections[directionID];
+        return direction;
     }
 
     public void addObserver(IPositionChangeObserver observer){
@@ -123,9 +178,13 @@ public class Animal extends AbstractWorldMapElement{
     public void setRandomGenes(){
         this.genes = new int[numberOfGenes];
         for(int gene:genes){
-            gene = ((int)(Math.random() * 100)) % genesRange;
+            gene = getRandomNumberFrom0ToN(genesRange);
         }
         Arrays.sort(genes);
+    }
+
+    private int getRandomNumberFrom0ToN(int n) {
+        return ((int)(Math.random() * 100)) % n;
     }
 
     public void setGenesBasedOnParents(Animal parent1, Animal parent2){
@@ -177,5 +236,26 @@ public class Animal extends AbstractWorldMapElement{
 
     public void setEnergy(int inputEnergy){
         this.energy = inputEnergy;
+    }
+
+    public int compareTo(Object o) {
+        if (o instanceof Animal){
+            int energyDiff = this.getEnergy() - ((Animal) o).getEnergy();
+            if (energyDiff != 0){return energyDiff;}
+
+            if(Math.random() - 0.5 > 0) return 1;
+            else return -1;
+            }
+        return 0;
+    }
+
+    public boolean readyForReproduction(){
+        return this.getEnergy() * 2 >= startEnergy;
+    }
+
+    public int extractEnergyForChild() {
+        int energyForChild = (int) (this.getEnergy() * 0.25);
+        this.setEnergy(this.getEnergy() - energyForChild);
+        return energyForChild;
     }
 }

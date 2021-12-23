@@ -3,9 +3,9 @@ package agh.ics.oop;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RectangularMapIWorldMapTest {
+public class BorderedMapIWorldMapTest {
     @Test void canMoveToBorderTest(){
-        IWorldMap map = new RectangularMap(10,5);
+        IWorldMap map = new BorderedMap(10,5);
 
         assertTrue(map.canMoveTo(new Vector2d(9,4)));
         assertFalse(map.canMoveTo(new Vector2d(10,4)));
@@ -21,7 +21,7 @@ public class RectangularMapIWorldMapTest {
     }
 
     @Test void canMoveToAnimalTest(){
-        IWorldMap map = new RectangularMap(10,10);
+        IWorldMap map = new BorderedMap(10,10);
         map.place(new Animal(map,new Vector2d(0,0)));
         map.place(new Animal(map,new Vector2d(5,5)));
 
@@ -31,7 +31,7 @@ public class RectangularMapIWorldMapTest {
     }
 
     @Test void placeAndIsOccupiedTest(){
-        IWorldMap map = new RectangularMap(10,10);
+        IWorldMap map = new BorderedMap(10,10);
         map.place(new Animal(map,new Vector2d(0,0)));
         map.place(new Animal(map,new Vector2d(5,5)));
 
@@ -45,7 +45,7 @@ public class RectangularMapIWorldMapTest {
     }
 
     @Test void objectAtTest() {
-        IWorldMap map = new RectangularMap(10,10);
+        IWorldMap map = new BorderedMap(10,10);
         Animal animal1 = new Animal(map,new Vector2d(0,0));
         Animal animal2 = new Animal(map,new Vector2d(5,5));
         map.place(animal1);

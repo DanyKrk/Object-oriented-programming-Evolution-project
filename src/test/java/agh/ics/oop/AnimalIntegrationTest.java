@@ -34,7 +34,7 @@ public class AnimalIntegrationTest {
 
     @Test void positionTest() {
 
-        IWorldMap map = new RectangularMap(10,10);
+        IWorldMap map = new BorderedMap(10,10);
         Animal pig1 = new Animal(map, new Vector2d(2,2));
         String[] in1 = {"right", "f", "forward"};
         MoveDirection[] pig_directions1 = OptionsParser.parse(in1);
@@ -58,7 +58,7 @@ public class AnimalIntegrationTest {
 
 
     @Test void orientationAndPositionTest(){
-        IWorldMap map = new RectangularMap(10,10);
+        IWorldMap map = new BorderedMap(10,10);
         Animal pig1 = new Animal(map, new Vector2d(2,2));
         String[] in1 = {"right", "f", "forward"};
         MoveDirection[] pig_directions1 = OptionsParser.parse(in1);

@@ -8,7 +8,7 @@ public class Lab4IntegrationTest {
     @Test void animalsMovementTest1(){
         String[] arguments = {"f", "b", "r" ,"l", "f", "f", "r", "r", "f", "f", "f", "f", "f", "f", "f", "f"};
         MoveDirection[] directions = new OptionsParser().parse(arguments);
-        IWorldMap map = new RectangularMap(10, 5);
+        IWorldMap map = new BorderedMap(10, 5);
         Vector2d[] positions = { new Vector2d(2,2), new Vector2d(3,4) };
         IEngine engine = new SimulationEngine(map, positions, 0);
         engine.setDirections(directions);
@@ -29,7 +29,7 @@ public class Lab4IntegrationTest {
         assertThrows(IllegalArgumentException.class, () -> {
         String[] arguments = {"f", "r" ,"l", "f", "f", "forward", "backward", "f", "f", "f", "l", "f", "b", "f", "f", "right", "f", "f", "f", "forward", "left", "r", "l", "f", "f", "f"};
         MoveDirection[] directions = new OptionsParser().parse(arguments);
-        IWorldMap map = new RectangularMap(5, 5);
+        IWorldMap map = new BorderedMap(5, 5);
         Vector2d[] positions = { new Vector2d(2,2), new Vector2d(2,2), new Vector2d(11,11), new Vector2d(0,0), new Vector2d(-1,2), new Vector2d(3,4), new Vector2d(3,5), new Vector2d(5,1) };
         IEngine engine = new SimulationEngine(map, positions, 0);
         engine.setDirections(directions);
@@ -61,7 +61,7 @@ public class Lab4IntegrationTest {
         assertThrows(IllegalArgumentException.class, () -> {
             String[] arguments = {"f", "r" ,"l", "f", "f", "forward", "backward", "f", "f", "f", "l", "f", "b", "f", "f", "right", "f", "f", "f", "forward", "left", "r", "l", "f", "f", "f"};
             MoveDirection[] directions = new OptionsParser().parse(arguments);
-            IWorldMap map = new RectangularMap(5, 5);
+            IWorldMap map = new BorderedMap(5, 5);
             Vector2d[] positions = { new Vector2d(11,11), new Vector2d(0,0), new Vector2d(-1,2), new Vector2d(3,4), new Vector2d(3,5), new Vector2d(5,1) };
             IEngine engine = new SimulationEngine(map, positions, 0);
             engine.setDirections(directions);
@@ -92,7 +92,7 @@ public class Lab4IntegrationTest {
     @Test void animalsMovementTest2(){
         String[] arguments = {"f", "r" ,"l", "f", "f", "forward", "backward", "f", "f", "f", "l", "f", "b", "f", "f", "right", "f", "f", "f", "forward", "left", "r", "l", "f", "f", "f"};
         MoveDirection[] directions = new OptionsParser().parse(arguments);
-        IWorldMap map = new RectangularMap(5, 5);
+        IWorldMap map = new BorderedMap(5, 5);
         Vector2d[] positions = { new Vector2d(2,2), new Vector2d(0,0), new Vector2d(3,4)};
         IEngine engine = new SimulationEngine(map, positions, 0);
         engine.setDirections(directions);

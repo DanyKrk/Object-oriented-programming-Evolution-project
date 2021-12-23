@@ -6,13 +6,19 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
-
+    private int width;
+    private int height;
     protected Vector2d upperRightCorner;
     protected Vector2d lowerLeftCorner;
 //    protected List<IMapElement> elements = new ArrayList<>();
     protected Map<Vector2d, IMapElement> positionElementMap= new LinkedHashMap<>();
     protected MapVisualizer drawer;
-    protected MapBoundary border = new MapBoundary();
+
+    public AbstractWorldMap(int width, int height){
+        this.lowerLeftCorner = new Vector2d(0,0);
+        this.upperRightCorner = new Vector2d(width - 1, height - 1);
+        drawer = new MapVisualizer(this);
+    }
 
     public boolean canMoveTo(Vector2d position){
         if (this.isOccupied(position)) return false;
@@ -25,8 +31,6 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         if (canMoveTo(destination)) {
             positionElementMap.put(destination, animal);
             animal.addObserver(this);
-            animal.addObserver(border);
-            border.addPosition(destination);
             return true;
         }
         else {
@@ -44,19 +48,11 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
 
     public IMapElement removeElement(Vector2d position){
         IMapElement element = this.positionElementMap.remove(position);
-        if(element != null){ border.removePosition(position);}
         return element;
     }
 
     public String toString(){
-        prepareCorners();
-
         return drawer.draw(lowerLeftCorner, upperRightCorner);
-    }
-
-    protected void prepareCorners(){
-        upperRightCorner = border.getUpperRightCorner();
-        lowerLeftCorner = border.getLowerLeftCorner();
     }
 
     public boolean positionChanged(Vector2d oldPosition, Vector2d newPosition){
@@ -66,11 +62,11 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     public Vector2d getUpperRightCorner(){
-        return this.border.getUpperRightCorner();
+        return this.getUpperRightCorner();
     }
 
     public Vector2d getLowerLeftCorner(){
-        return this.border.getLowerLeftCorner();
+        return this.getLowerLeftCorner();
     }
 
     public Map<Vector2d, IMapElement> getPositionElementMap(){
