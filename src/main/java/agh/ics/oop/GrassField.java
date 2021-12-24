@@ -37,14 +37,14 @@ public class GrassField extends AbstractWorldMap {
         return null;
     }
 
-    @Override public boolean positionChanged(Vector2d oldPosition, Vector2d newPosition){
-        IMapElement element = this.positionElementMap.remove(oldPosition);
-        if(element == null) return false;
-        if(this.positionElementMap.remove(newPosition) != null){
-            this.placeGrass();
-        }; //potential grass eating
-        return this.positionElementMap.put(newPosition, element) == element;
-    }
+//    @Override public boolean positionChanged(Vector2d oldPosition, Vector2d newPosition){
+//        IMapElement element = this.positionElementMap.remove(oldPosition);
+//        if(element == null) return false;
+//        if(this.positionElementMap.remove(newPosition) != null){
+//            this.placeGrass();
+//        }; //potential grass eating
+//        return this.positionElementMap.put(newPosition, element) == element;
+//    }
 
     private void placeGrass(){
         boolean placedFlag = false;

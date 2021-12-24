@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Animal extends AbstractWorldMapElement implements Comparable{
-    private final int startEnergy = 15;
     private final int numberOfGenes = 32;
     private final int genesRange = 8;
     private final MoveDirection[] moveDirections = {
@@ -17,7 +16,8 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
             MoveDirection.BACKWARD,
             MoveDirection.LEFTBACKWARD,
             MoveDirection.LEFT,
-            MoveDirection.LEFTFORWARD};
+            MoveDirection.LEFTFORWARD
+    };
     private final MapDirection[] mapDirections = {
             MapDirection.NORTH,
             MapDirection.NORTHEAST,
@@ -66,32 +66,26 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         switch (direction) {
             case RIGHTFORWARD -> {
                 this.orientation = orientation.next();
-                positionChanged(oldPosition, newPosition);
                 return;
             }
             case RIGHT -> {
                 this.orientation = orientation.next().next();
-                positionChanged(oldPosition, newPosition);
                 return;
             }
             case RIGHTBACKWARD -> {
                 this.orientation = orientation.next().next().next();
-                positionChanged(oldPosition, newPosition);
                 return;
             }
             case LEFTFORWARD -> {
                 this.orientation = orientation.previous();
-                positionChanged(oldPosition,newPosition);
                 return;
             }
             case LEFT -> {
                 this.orientation = orientation.previous().previous();
-                positionChanged(oldPosition,newPosition);
                 return;
             }
             case LEFTBACKWARD -> {
                 this.orientation = orientation.previous().previous().previous();
-                positionChanged(oldPosition,newPosition);
                 return;
             }
             case FORWARD -> newPosition = this.position.add(orientation.toUnitVector());
@@ -126,7 +120,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
 
     void positionChanged(Vector2d oldPosition, Vector2d newPosition){
         for(IPositionChangeObserver observer: observers){
-            observer.positionChanged(oldPosition, newPosition);
+            observer.positionChanged(this, oldPosition, newPosition);
         }
     }
 
@@ -250,7 +244,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
     }
 
     public boolean readyForReproduction(){
-        return this.getEnergy() * 2 >= startEnergy;
+        return this.getEnergy() * 2 >= this.map.getStartEnergy();
     }
 
     public int extractEnergyForChild() {

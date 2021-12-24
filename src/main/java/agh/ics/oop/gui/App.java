@@ -121,7 +121,7 @@ public class App extends Application implements IPositionChangeObserver{
     }
 
     @Override
-    public boolean positionChanged(Vector2d oldPosition, Vector2d newPosition) {
+    public boolean positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition) {
         Platform.runLater(() -> {
             try {
                 updateGridPane();
