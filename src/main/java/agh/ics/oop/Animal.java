@@ -28,25 +28,23 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
             MapDirection.WEST,
             MapDirection.NORTHWEST
     };
-
     private String northImageName = "src/main/resources/pig_up.png";
     private String southImageName = "src/main/resources/pig_down.png";
     private String eastImageName = "src/main/resources/pig_right.png";
     private String westImageName = "src/main/resources/pig_left.png";
-
     public final AbstractWorldMap map;
-
     private MapDirection orientation;
-
     private int energy;
-
     private int[] genotype;
-
     private List<IPositionChangeObserver> positionChangeObservers = new ArrayList<>();
     private List<IAnimalEnergyObserver> energyObservers = new ArrayList<>();
     private long birthDay;
     private long deathDay;
     private int numberOfChildren;
+    private boolean isTracked;
+    private List<Animal> descendants;
+    private boolean notifiesAncestor;
+    private Animal trackedAncestor;
 
 
     public Animal(AbstractWorldMap map, Vector2d initialPosition, long birthDay){
@@ -56,6 +54,8 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
        this.addPositionChangeObserver(this.map);
        this.addEnergyObserver(this.map);
        this.numberOfChildren = 0;
+       this.isTracked = false;
+       this.trackedAncestor = null;
     }
 
     private void addEnergyObserver(AbstractWorldMap map) {
@@ -288,5 +288,55 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
 
     public int getNumberOfChildren() {
         return this.numberOfChildren;
+    }
+
+    public void startTracking(){
+        this.isTracked = true;
+        this.descendants = new ArrayList<>();
+    }
+
+    public void stopTracking(){
+        this.isTracked = false;
+        this.notifyDescendantsToForgetTrackedAncestor();
+        this.descendants = null;
+    }
+
+    private void notifyDescendantsToForgetTrackedAncestor() {
+        for(Animal descendant: descendants){
+            descendant.forgetTrackedAncestor();
+        }
+    }
+
+    private void forgetTrackedAncestor() {
+        this.notifiesAncestor = false;
+        this.trackedAncestor = null;
+    }
+
+    public void startNotifyingTrackedAncestor(Animal trackedAncestor){
+        this.trackedAncestor = trackedAncestor;
+        this.notifiesAncestor = true;
+    }
+
+    public boolean isTracked() {
+        return this.isTracked;
+    }
+
+    public boolean notifiesAncestor(){
+        return this.notifiesAncestor;
+    }
+
+    public void addDescendant(Animal child) {
+        this.descendants.add(child);
+    }
+
+    public Animal getTrackedAncestor() {
+        return trackedAncestor;
+    }
+
+    public int getNumberOfDescendants(){
+        if (!this.isTracked()){
+            throw new IllegalActionException("Trying to get number of descendants from not tracked Animal!!!");
+        }
+        else return this.descendants.size();
     }
 }

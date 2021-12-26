@@ -330,4 +330,28 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     public long getDay() {
         return this.day;
     }
+
+    public int getNumberOfAnimals(){
+        return this.numberOfAnimals;
+    }
+
+    public int getNumberOfGrasses(){
+        return this.numberOfGrassesInJungle + this.numberOfGrassesInSteppe;
+    }
+
+    public int[] getDominatingGenotype(){
+        return this.dominatingGenotype;
+    }
+
+    public float getAverageEnergyOfLivingAnimals(){
+        return energyOfLivingAnimals/(float)numberOfAnimals;
+    }
+
+    public float getAverageLifespanOfDeadAnimals(){
+        return lifespanOfDeadAnimals / (float)numberOfDeadAnimals;
+    }
+
+    public float getAverageNumberOfChildrenOfLivingAnimals(){
+        return numberOfChildrenOfLivingAnimals / (float)numberOfAnimals;
+    }
 }

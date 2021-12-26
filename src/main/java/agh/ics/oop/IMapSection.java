@@ -81,12 +81,29 @@ public class IMapSection {
             Animal child = new Animal(this.map, this.position, this.map.getDay());
             child.setGenesBasedOnParents(parent1, parent2);
             child.setEnergy(parent1.extractEnergyForChild() + parent2.extractEnergyForChild());
+            if(parent1.isTracked()){
+                linkTrackedAncestorWithDescendant(parent1, child);
+            }
+            if(parent2.isTracked()){
+                linkTrackedAncestorWithDescendant(parent2, child);
+            }
+            if(parent1.notifiesAncestor()){
+                linkTrackedAncestorWithDescendant(parent1.getTrackedAncestor(), child);
+            }
+            if(parent2.notifiesAncestor()){
+                linkTrackedAncestorWithDescendant(parent2.getTrackedAncestor(), child);
+            }
             this.placeAnimal(child);
             this.incrementNumberOfAnimals();
             animalWasBorn(child);
         }
         animalsSortedByEnergyDescending.add(parent1);
         animalsSortedByEnergyDescending.add(parent2);
+    }
+
+    private void linkTrackedAncestorWithDescendant(Animal trackedAncestor, Animal descendant) {
+        trackedAncestor.addDescendant(descendant);
+        descendant.startNotifyingTrackedAncestor(trackedAncestor);
     }
 
     public void grassEating(){
