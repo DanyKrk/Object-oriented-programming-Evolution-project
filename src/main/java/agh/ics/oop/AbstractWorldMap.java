@@ -1,8 +1,6 @@
 package agh.ics.oop;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver, IPopulationOfAnimalsObserver,
         IGrassExsistenceObserver, IAnimalEnergyObserver{
@@ -27,7 +25,6 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     protected Vector2d lowerLeftCorner;
     private Vector2d jungleLowerLeftCorner;
     private Vector2d jungleUpperRightCorner;
-//    protected List<IMapElement> elements = new ArrayList<>();
     protected Map<Vector2d, IMapSection> positionSectionMap = Collections.synchronizedMap(new HashMap<>());
     private Map<int[], Integer> genotypeNumberOfOwnersMap = Collections.synchronizedMap(new HashMap<>());
     private int[] dominatingGenotype;
@@ -354,4 +351,26 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     public float getAverageNumberOfChildrenOfLivingAnimals(){
         return numberOfChildrenOfLivingAnimals / (float)numberOfAnimals;
     }
+
+    public List<Animal> getAnimalsWithDominatingGenotype(){
+        List<Animal> animalsWithDominatingGenotype = new ArrayList<>();
+        for(IMapSection section: this.positionSectionMap.values()){
+            animalsWithDominatingGenotype.addAll(section.getAnimalsWithGenotype(this.dominatingGenotype));
+        }
+        return animalsWithDominatingGenotype;
+    }
+
+    public int getWidth() {
+        return this.width;
+    }
+
+    public int getHeight() {
+        return this.height;
+    }
+
+    public boolean canMoveTo(Vector2d position) {
+        return position.precedes(upperRightCorner) && position.follows(lowerLeftCorner);
+    }
+
+    public abstract boolean bordersRunaround();
 }

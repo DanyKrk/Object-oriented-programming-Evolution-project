@@ -101,7 +101,10 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
             case BACKWARD -> newPosition = this.position.subtract(orientation.toUnitVector());
         }
         if ( !this.map.canMoveTo(newPosition)){
-            return;
+            if (this.map.bordersRunaround()) {
+                newPosition = new Vector2d(newPosition.getX() % this.map.getWidth(), newPosition.getY() % this.map.getHeight());
+            }
+            else return;
         }
         this.position = newPosition;
         positionChanged(oldPosition,newPosition);

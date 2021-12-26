@@ -9,9 +9,9 @@ public class IMapSection {
     private Grass grass;
     private boolean containsGrass;
     private boolean containsAnimal;
-    private List<IPopulationOfAnimalsObserver> populationOfAnimalsObservers = new ArrayList<>();
+    private List<IPopulationOfAnimalsObserver> populationOfAnimalsObservers = Collections.synchronizedList(new ArrayList<>());
     private int numberOfAnimals;
-    private List<IGrassExsistenceObserver> grassExistenceObservers = new ArrayList<>();
+    private List<IGrassExsistenceObserver> grassExistenceObservers = Collections.synchronizedList(new ArrayList<>());
 
     public IMapSection(AbstractWorldMap map, Vector2d position){
         this.map = map;
@@ -57,7 +57,7 @@ public class IMapSection {
 
     private void animalDied(Animal animal, long day) {
         for (IPopulationOfAnimalsObserver observer : populationOfAnimalsObservers) {
-            observer.animalDied(animal, day);
+            observer.animalDied(animal);
         }
     }
 
@@ -194,5 +194,17 @@ public class IMapSection {
         for(IGrassExsistenceObserver observer: grassExistenceObservers){
             observer.grassSpawned(this.position);
         }
+    }
+
+    public List<Animal> getAnimalsWithGenotype(int[] dominatingGenotype) {
+        List<Animal> animalsWithGenotype = new ArrayList<>();
+        Iterator<Animal> itr = this.animalsSortedByEnergyDescending.iterator();
+        while(itr.hasNext()){
+            Animal animal = itr.next();
+            if(animal.getGenotype() == dominatingGenotype){
+                animalsWithGenotype.add(animal);
+            }
+        }
+        return animalsWithGenotype;
     }
 }
