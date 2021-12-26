@@ -24,7 +24,7 @@ public interface IWorldMap {
      *            The animal to place on the map.
      * @return True if the animal was placed. The animal cannot be placed if the map is already occupied.
      */
-    boolean placeNewAnimal(Animal animal);
+    boolean manuallyPlaceNewAnimal(Animal animal);
 
     /**
      * Remove an object from the map.
@@ -32,17 +32,6 @@ public interface IWorldMap {
      * @param position
      *            The animal to place on the map.
      * @return Removed element if the object was removed. Otherwise, null. The object cannot be removed if it isn't on the map.
-     */
-    IMapElement removeElement(Vector2d position);
-
-    /**
-     * Return true if given position on the map is occupied. Should not be
-     * confused with canMove since there might be empty positions where the animal
-     * cannot move.
-     *
-     * @param position
-     *            Position to check.
-     * @return True if the position is occupied.
      */
 
     boolean isOccupied(Vector2d position);

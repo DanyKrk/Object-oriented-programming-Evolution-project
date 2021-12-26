@@ -121,7 +121,7 @@ public class App extends Application implements IPositionChangeObserver{
     }
 
     @Override
-    public boolean positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition) {
+    public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition) {
         Platform.runLater(() -> {
             try {
                 updateGridPane();
@@ -137,7 +137,7 @@ public class App extends Application implements IPositionChangeObserver{
 
         for(IMapElement element: positionElementMap.values()) {
             if(element instanceof Animal){
-                ((Animal) element).addObserver(this);
+                ((Animal) element).addPositionChangeObserver(this);
             }
 
             addGuiElementBoxToGridPane(upperRightCorner, lowerLeftCorner, element);

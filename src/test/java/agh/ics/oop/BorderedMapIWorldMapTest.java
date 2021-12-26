@@ -22,8 +22,8 @@ public class BorderedMapIWorldMapTest {
 
     @Test void canMoveToAnimalTest(){
         IWorldMap map = new BorderedMap(10,10);
-        map.placeNewAnimal(new Animal(map,new Vector2d(0,0)));
-        map.placeNewAnimal(new Animal(map,new Vector2d(5,5)));
+        map.manuallyPlaceNewAnimal(new Animal(map,new Vector2d(0,0)));
+        map.manuallyPlaceNewAnimal(new Animal(map,new Vector2d(5,5)));
 
         assertFalse(map.canMoveTo(new Vector2d(0,0)));
         assertFalse(map.canMoveTo(new Vector2d(5,5)));
@@ -32,8 +32,8 @@ public class BorderedMapIWorldMapTest {
 
     @Test void placeAndIsOccupiedTest(){
         IWorldMap map = new BorderedMap(10,10);
-        map.placeNewAnimal(new Animal(map,new Vector2d(0,0)));
-        map.placeNewAnimal(new Animal(map,new Vector2d(5,5)));
+        map.manuallyPlaceNewAnimal(new Animal(map,new Vector2d(0,0)));
+        map.manuallyPlaceNewAnimal(new Animal(map,new Vector2d(5,5)));
 
         assertTrue(map.isOccupied(new Vector2d(0,0)));
         assertFalse(map.isOccupied(new Vector2d(0,1)));
@@ -48,8 +48,8 @@ public class BorderedMapIWorldMapTest {
         IWorldMap map = new BorderedMap(10,10);
         Animal animal1 = new Animal(map,new Vector2d(0,0));
         Animal animal2 = new Animal(map,new Vector2d(5,5));
-        map.placeNewAnimal(animal1);
-        map.placeNewAnimal(animal2);
+        map.manuallyPlaceNewAnimal(animal1);
+        map.manuallyPlaceNewAnimal(animal2);
 
         assertNull(map.objectAt(new Vector2d(1,1)));
         assertNull(map.objectAt(new Vector2d(9,9)));

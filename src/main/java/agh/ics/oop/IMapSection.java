@@ -1,6 +1,4 @@
-package agh.ics.oop.gui;
-
-import agh.ics.oop.*;
+package agh.ics.oop;
 
 import java.util.*;
 
@@ -10,7 +8,8 @@ public class IMapSection {
     private SortedSet<Animal> animalsSortedByEnergyDescending;
     private Grass grass;
     private boolean containsGrass;
-    private List<INumberOfAnimalsObserver> numberOfAnimalsObservers = new ArrayList<>();
+    private boolean containsAnimal;
+    private List<IPopulationOfAnimalsObserver> populationOfAnimalsObservers = new ArrayList<>();
     private int numberOfAnimals;
     private List<IGrassExsistenceObserver> grassExistenceObservers = new ArrayList<>();
 
@@ -21,6 +20,13 @@ public class IMapSection {
         this.grass = null;
         this.containsGrass = false;
         this.numberOfAnimals = 0;
+        this.containsAnimal = false;
+        this.addPopulationOfAnimalsObserver(map);
+        this.addGrassExistenceObserver(map);
+    }
+
+    private void addGrassExistenceObserver(AbstractWorldMap map) {
+        this.grassExistenceObservers.add(map);
     }
 
     public boolean containsGrass() {
@@ -35,12 +41,29 @@ public class IMapSection {
     }
 
     public void removeDeadAnimals(){
+        long day = this.map.getDay();
         Iterator<Animal> itr = animalsSortedByEnergyDescending.iterator();
         while (itr.hasNext()) {
-            if(itr.next().getEnergy() <= 0){
+            Animal animal = itr.next();
+            if(animal.getEnergy() < this.map.getMoveEnergy()){
+                this.decrementNumberOfAnimals();
+                animal.setDeathDay(day);
+                animalDied(animal, day);
                 itr.remove();
-                decrementNumberOfAnimals();
             }
+        }
+
+    }
+
+    private void animalDied(Animal animal, long day) {
+        for (IPopulationOfAnimalsObserver observer : populationOfAnimalsObservers) {
+            observer.animalDied(animal, day);
+        }
+    }
+
+    private void animalWasBorn(Animal animal) {
+        for (IPopulationOfAnimalsObserver observer : populationOfAnimalsObservers) {
+            observer.animalWasBorn(animal);
         }
     }
 
@@ -53,14 +76,17 @@ public class IMapSection {
         animalsSortedByEnergyDescending.remove(parent2);
 
         if (parent1.readyForReproduction() && parent2.readyForReproduction()){
-            Animal child = new Animal(this.map, this.position);
+            parent1.incrementNumberOfChildren();
+            parent2.incrementNumberOfChildren();
+            Animal child = new Animal(this.map, this.position, this.map.getDay());
             child.setGenesBasedOnParents(parent1, parent2);
             child.setEnergy(parent1.extractEnergyForChild() + parent2.extractEnergyForChild());
-            this.map.placeNewAnimal(child);
-            incrementNumberOfAnimals();
-            this.placeAnimal(parent1);
-            this.placeAnimal(parent2);
+            this.placeAnimal(child);
+            this.incrementNumberOfAnimals();
+            animalWasBorn(child);
         }
+        animalsSortedByEnergyDescending.add(parent1);
+        animalsSortedByEnergyDescending.add(parent2);
     }
 
     public void grassEating(){
@@ -99,8 +125,10 @@ public class IMapSection {
         }
     }
 
-    public boolean placeAnimal(Animal animal) {
-        return this.animalsSortedByEnergyDescending.add(animal);
+    public void placeAnimal(Animal animal) {
+        boolean animalPlaced = this.animalsSortedByEnergyDescending.add(animal);
+        if (animalPlaced) this.incrementNumberOfAnimals();
+        else throw new IllegalActionException("Animal cannot be placed on" + this.position);
     }
 
     public Object objectAt() {
@@ -110,29 +138,27 @@ public class IMapSection {
         else return this.grass;
     }
 
-    public boolean removeAnimal(Animal animal) {
-        return this.animalsSortedByEnergyDescending.remove(animal);
+    public void removeAnimal(Animal animal) {
+        boolean animalRemoved = this.animalsSortedByEnergyDescending.remove(animal);
+        if (animalRemoved) this.decrementNumberOfAnimals();
+        else throw new IllegalActionException("There is no Animal that you want to remove from" + this.position);
     }
 
-    public void addNumberOfAnimalsObserver(INumberOfAnimalsObserver observer){
-        this.numberOfAnimalsObservers.add(observer);
+    public void addPopulationOfAnimalsObserver(IPopulationOfAnimalsObserver observer){
+        this.populationOfAnimalsObservers.add(observer);
     }
 
-    public void removeNumberOfAnimalsObserver(INumberOfAnimalsObserver observer){
-        this.numberOfAnimalsObservers.remove(observer);
+    public void removeNumberOfAnimalsObserver(IPopulationOfAnimalsObserver observer){
+        this.populationOfAnimalsObservers.remove(observer);
     }
 
     private void incrementNumberOfAnimals(){
         this.numberOfAnimals += 1;
-        for(INumberOfAnimalsObserver observer: numberOfAnimalsObservers){
-            observer.incrementNumberOfAnimals();
-        }
+        if (this.numberOfAnimals > 0) this.containsAnimal = true;
     }
     private void decrementNumberOfAnimals() {
         this.numberOfAnimals -= 1;
-        for (INumberOfAnimalsObserver observer : numberOfAnimalsObservers) {
-            observer.decrementNumberOfAnimals();
-        }
+        if(this.numberOfAnimals == 0) this.containsAnimal = false;
     }
     private void grassEaten(Vector2d position){
         this.grass = null;
@@ -141,16 +167,15 @@ public class IMapSection {
             observer.grassEaten(position);
         }
     }
-    private void grassSpawned(Vector2d position){
+
+    public void spawnGrass(){
+        if(this.containsGrass || this.containsAnimal) {
+            throw new IllegalActionException("Grass cannot be spawned at" + this.position);
+        }
         this.grass = new Grass(this.position);
         this.containsGrass = true;
         for(IGrassExsistenceObserver observer: grassExistenceObservers){
-            observer.grassSpawned(position);
+            observer.grassSpawned(this.position);
         }
-    }
-    public void spawnGrass(){
-        this.grass = new Grass(this.position);
-        this.containsGrass = true;
-        grassSpawned(this.position);
     }
 }

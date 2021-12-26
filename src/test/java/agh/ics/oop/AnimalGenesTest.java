@@ -23,8 +23,8 @@ public class AnimalGenesTest {
             testGenes1[i] = 0;
             testGenes2[i] = 1;
         }
-        parent1.setGenes(testGenes1);
-        parent2.setGenes(testGenes2);
+        parent1.setGenotype(testGenes1);
+        parent2.setGenotype(testGenes2);
 
         parent1.setEnergy(strongerParentEnergy);
         parent2.setEnergy(weakerParentEnergy);
@@ -39,7 +39,7 @@ public class AnimalGenesTest {
         for (int i = 24; i < 32; i++){
             expectedChildGenes[i] = 1;
         }
-        assertArrayEquals(expectedChildGenes, child.getGenes());
+        assertArrayEquals(expectedChildGenes, child.getGenotype());
     }
 
 }

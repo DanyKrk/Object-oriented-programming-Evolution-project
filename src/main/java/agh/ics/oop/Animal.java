@@ -40,17 +40,26 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
 
     private int energy;
 
-    private int[] genes;
+    private int[] genotype;
 
-    private List<IPositionChangeObserver> observers = new ArrayList<>();
+    private List<IPositionChangeObserver> positionChangeObservers = new ArrayList<>();
+    private List<IAnimalEnergyObserver> energyObservers = new ArrayList<>();
+    private long birthDay;
+    private long deathDay;
+    private int numberOfChildren;
 
 
-
-    public Animal(AbstractWorldMap map, Vector2d initialPosition){
+    public Animal(AbstractWorldMap map, Vector2d initialPosition, long birthDay){
        super(initialPosition);
        this.map = map;
        this.orientation = getRandomMapDirection();
-       this.addObserver(this.map);
+       this.addPositionChangeObserver(this.map);
+       this.addEnergyObserver(this.map);
+       this.numberOfChildren = 0;
+    }
+
+    private void addEnergyObserver(AbstractWorldMap map) {
+        this.energyObservers.add(map);
     }
 
     @Override public String toString() {
@@ -61,7 +70,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         Vector2d newPosition = this.position;
         Vector2d oldPosition = this.position;
 
-        MoveDirection direction = getRandomMoveDirectionBasedOnGenes();
+        MoveDirection direction = getRandomMoveDirectionBasedOnGenotype();
 
         switch (direction) {
             case RIGHTFORWARD -> {
@@ -98,8 +107,8 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         positionChanged(oldPosition,newPosition);
     }
 
-    private MoveDirection getRandomMoveDirectionBasedOnGenes() {
-        int directionID = genes[getRandomNumberFrom0ToN(numberOfGenes)];
+    private MoveDirection getRandomMoveDirectionBasedOnGenotype() {
+        int directionID = genotype[getRandomNumberFrom0ToN(numberOfGenes)];
         MoveDirection direction = moveDirections[directionID];
         return direction;
     }
@@ -110,16 +119,16 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         return direction;
     }
 
-    public void addObserver(IPositionChangeObserver observer){
-        this.observers.add(observer);
+    public void addPositionChangeObserver(IPositionChangeObserver observer){
+        this.positionChangeObservers.add(observer);
     }
 
     void removeObserver(IPositionChangeObserver observer){
-        this.observers.remove(observer);
+        this.positionChangeObservers.remove(observer);
     }
 
     void positionChanged(Vector2d oldPosition, Vector2d newPosition){
-        for(IPositionChangeObserver observer: observers){
+        for(IPositionChangeObserver observer: positionChangeObservers){
             observer.positionChanged(this, oldPosition, newPosition);
         }
     }
@@ -165,16 +174,16 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         return energy;
     }
 
-    public int[] getGenes() {
-        return genes;
+    public int[] getGenotype() {
+        return genotype;
     }
 
     public void setRandomGenes(){
-        this.genes = new int[numberOfGenes];
-        for(int gene:genes){
+        this.genotype = new int[numberOfGenes];
+        for(int gene: genotype){
             gene = getRandomNumberFrom0ToN(genesRange);
         }
-        Arrays.sort(genes);
+        Arrays.sort(genotype);
     }
 
     private int getRandomNumberFrom0ToN(int n) {
@@ -182,7 +191,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
     }
 
     public void setGenesBasedOnParents(Animal parent1, Animal parent2){
-        this.genes = new int[numberOfGenes];
+        this.genotype = new int[numberOfGenes];
         Animal strongerParent;
         Animal weakerParent;
 
@@ -195,8 +204,8 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
             weakerParent = parent1;
         }
 
-        int[] strongerGenes = strongerParent.getGenes();
-        int[] weakerGenes = weakerParent.getGenes();
+        int[] strongerGenes = strongerParent.getGenotype();
+        int[] weakerGenes = weakerParent.getGenotype();
         int strongerParentEnergy = strongerParent.getEnergy();
         int weakerParentEnergy = weakerParent.getEnergy();
 
@@ -205,31 +214,39 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         if (takesLeftSideGenesFromStrongerParent){
             int borderID = (numberOfGenes - 1) * strongerParentEnergy / (strongerParentEnergy + weakerParentEnergy);
             for (int i = 0; i <= borderID; i++){
-                this.genes[i] = strongerGenes[i];
+                this.genotype[i] = strongerGenes[i];
             }
             for (int i = borderID + 1; i < numberOfGenes; i++){
-                this.genes[i] = weakerGenes[i];
+                this.genotype[i] = weakerGenes[i];
             }
         }
         else {
             int borderID = (numberOfGenes - 1) * weakerParentEnergy / (strongerParentEnergy + weakerParentEnergy);
             for (int i = 0; i <= borderID; i++){
-                this.genes[i] = weakerGenes[i];
+                this.genotype[i] = weakerGenes[i];
             }
             for (int i = borderID + 1; i < numberOfGenes; i++){
-                this.genes[i] = strongerGenes[i];
+                this.genotype[i] = strongerGenes[i];
             }
         }
 
-        Arrays.sort(this.genes);
+        Arrays.sort(this.genotype);
     }
 
-    public void setGenes(int[] inputGenes){
-        this.genes = Arrays.copyOf(inputGenes,numberOfGenes);
+    public void setGenotype(int[] inputGenes){
+        this.genotype = Arrays.copyOf(inputGenes,numberOfGenes);
     }
 
     public void setEnergy(int inputEnergy){
+        int oldEnergy = this.getEnergy();
+        this.energyChanged(inputEnergy - oldEnergy);
         this.energy = inputEnergy;
+    }
+
+    private void energyChanged(int difference) {
+        for(IAnimalEnergyObserver observer: energyObservers){
+            observer.energyChanged(difference);
+        }
     }
 
     public int compareTo(Object o) {
@@ -251,5 +268,25 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         int energyForChild = (int) (this.getEnergy() * 0.25);
         this.setEnergy(this.getEnergy() - energyForChild);
         return energyForChild;
+    }
+
+    public long getBirthDay() {
+        return this.birthDay;
+    }
+
+    public long getDeathDay() {
+        return this.deathDay;
+    }
+
+    public void setDeathDay(long day) {
+        this.deathDay = day;
+    }
+
+    public void incrementNumberOfChildren() {
+        this.numberOfChildren += 1;
+    }
+
+    public int getNumberOfChildren() {
+        return this.numberOfChildren;
     }
 }
