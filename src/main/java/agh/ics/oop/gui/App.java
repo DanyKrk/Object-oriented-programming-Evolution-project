@@ -8,6 +8,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -21,9 +22,18 @@ public class App extends Application implements IPositionChangeObserver{
     final int rowHeight = 50;
     final int elementSize = 30;
     final int moveDelay = 300;
-    final AbstractWorldMap map = new GrassField(10);
-    Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
+    private int mapWidth;
+    private int mapHeight;
+    private int startEnergy;
+    private int moveEnergy;
+    private int plantEnergy;
+    private float jungleRatio;
+    private AbstractWorldMap borderedMap;
+    private AbstractWorldMap runaroundMap;
+//    Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
 
+
+    Scene startScene;
     GridPane gridPane = new GridPane();
     Thread engineThread;
     IEngine engine;
@@ -43,15 +53,64 @@ public class App extends Application implements IPositionChangeObserver{
     @Override
     public void start(Stage primaryStage) throws InterruptedException {
 
-        try {
-            fillGridPane();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        prepareScene();
-        primaryStage.setScene(scene);
+        startScene = getStartScene();
+        primaryStage.setScene(startScene);
         primaryStage.show();
+    }
+
+    private Scene getStartScene() {
+        Spinner<Integer> mapWidthSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 8, 1);
+        HBox mapWidthInputHBox = getIntegerSpinnerHBox(mapWidthSpinner, "Map width: ");
+
+        Spinner<Integer> mapHeightSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 8, 1);
+        HBox mapHeightInputHBox = getIntegerSpinnerHBox(mapHeightSpinner, "Map height: ");
+
+        Spinner<Integer> startEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 100, 1);
+        HBox startEnergyInputHBox = getIntegerSpinnerHBox(startEnergySpinner, "Start energy: ");
+
+        Spinner<Integer> moveEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 10, 1);
+        HBox moveEnergyInputHBox = getIntegerSpinnerHBox(moveEnergySpinner, "Move energy: ");
+
+        Spinner<Integer> plantEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 100, 1);
+        HBox plantEnergyInputHBox = getIntegerSpinnerHBox(plantEnergySpinner, "Plant energy: ");
+
+        Spinner<Double> jungleRatioSpinner = new Spinner<Double>(0.0, 1.0, 0.5, 0.1);
+        HBox jungleRatioInputHBox = getDoubleSpinnerHBox(jungleRatioSpinner, "Jungle ratio");
+
+        startButton = new Button("Start");
+
+        startButton.setOnAction(event -> {
+            mapWidth = mapWidthSpinner.getValue();
+            mapHeight = mapHeightSpinner.getValue();
+
+
+            engineThread.interrupt();
+            engine.setDirections(directions);
+            engineThread = new Thread(engine);
+            engineThread.start();
+
+        });
+
+        inputVBox = new VBox(10, mapWidthInputHBox, mapHeightInputHBox, startEnergyInputHBox, moveEnergyInputHBox,
+                plantEnergyInputHBox, jungleRatioInputHBox, startButton);
+        inputVBox.setAlignment(Pos.CENTER);
+
+        Scene startScene = new Scene(inputVBox, 800, 800);
+        return startScene;
+    }
+
+    private HBox getDoubleSpinnerHBox(Spinner<Double> spinner, String labelContent) {
+        spinner.setEditable(true);
+        Label label = new Label(labelContent);
+        HBox hBox = new HBox(10, label, spinner);
+        return hBox;
+    }
+
+    private HBox getIntegerSpinnerHBox(Spinner<Integer> spinner, String labelContent) {
+        spinner.setEditable(true);
+        Label label = new Label(labelContent);
+        HBox hBox = new HBox(10, label, spinner);
+        return hBox;
     }
 
     private void prepareScene() {
