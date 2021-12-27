@@ -4,10 +4,10 @@ import java.util.*;
 
 public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver, IPopulationOfAnimalsObserver,
         IGrassExsistenceObserver, IAnimalEnergyObserver{
-    private final int startEnergy = 15;
-    private final int moveEnergy = 3;
-    private final int plantEnergy = 10;
-    private final float jungleRatio = 0.25f;
+    private int startEnergy;
+    private int moveEnergy;
+    private int plantEnergy;
+    private double jungleRatio;
     private int width;
     private int height;
     private int jungleWidth;
@@ -25,7 +25,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     protected Vector2d lowerLeftCorner;
     private Vector2d jungleLowerLeftCorner;
     private Vector2d jungleUpperRightCorner;
-    protected Map<Vector2d, IMapSection> positionSectionMap = Collections.synchronizedMap(new HashMap<>());
+    protected Map<Vector2d, MapSection> positionSectionMap = Collections.synchronizedMap(new HashMap<>());
     private Map<int[], Integer> genotypeNumberOfOwnersMap = Collections.synchronizedMap(new HashMap<>());
     private int[] dominatingGenotype;
     private int numberOfAnimalsWithDominatingGenotype;
@@ -33,13 +33,17 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     private int numberOfDeadAnimals;
     private long day;
     private long lifespanOfDeadAnimals;
-    protected MapVisualizer drawer;
+//    protected MapVisualizer drawer;
     private int numberOfChildrenOfLivingAnimals;
 
 
-    public AbstractWorldMap(int width, int height){
+    public AbstractWorldMap(int width, int height, int startEnergy, int moveEnergy, int plantEnergy, double jungleRatio){
         this.width = width;
         this.height = height;
+        this.startEnergy = startEnergy;
+        this.moveEnergy = moveEnergy;
+        this.plantEnergy = plantEnergy;
+        this.jungleRatio = jungleRatio;
         this.lowerLeftCorner = new Vector2d(0,0);
         this.upperRightCorner = new Vector2d(width - 1, height - 1);
         this.jungleWidth = getJungleWidth(width, jungleRatio);
@@ -61,7 +65,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         this.energyOfLivingAnimals = 0;
         this.day = 0;
         this.lifespanOfDeadAnimals = 0;
-        drawer = new MapVisualizer(this);
+//        drawer = new MapVisualizer(this);
     }
 
     private void fillFreePositionsInSteppe(){
@@ -106,21 +110,21 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         return new Vector2d(leftMarginSize, bottomMarginSize);
     }
 
-    private int getJungleHeight(int height, float jungleRatio) {
-        return Math.round(height * jungleRatio);
+    private int getJungleHeight(int height, double jungleRatio) {
+        return (int) Math.round(height * jungleRatio);
     }
 
-    private int getJungleWidth(int width, float jungleRatio) {
-        return Math.round(width * jungleRatio);
+    private int getJungleWidth(int width, double jungleRatio) {
+        return (int) Math.round(width * jungleRatio);
     }
 
-    private IMapSection getSectionAtPosition(Vector2d position){
-        IMapSection sectionAtPosition;
+    private MapSection getSectionAtPosition(Vector2d position){
+        MapSection sectionAtPosition;
         if (this.positionSectionMap.containsKey(position)){
             sectionAtPosition = positionSectionMap.get(position);
         }
         else{
-            sectionAtPosition = new IMapSection(this, position);
+            sectionAtPosition = new MapSection(this, position);
             positionSectionMap.put(position, sectionAtPosition);
         }
         return sectionAtPosition;
@@ -130,7 +134,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         int[] genotype = animal.getGenotype();
 
         if (canMoveTo(destination)) {
-            IMapSection destinationSection = getSectionAtPosition(destination);
+            MapSection destinationSection = getSectionAtPosition(destination);
             destinationSection.placeAnimal(animal);
             incrementNumberOfAnimals();
             incrementNumberOfGenotypeOwners(genotype);
@@ -144,7 +148,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
 
     public Object objectAt(Vector2d position){
         if (this.positionSectionMap.containsKey(position)){
-            IMapSection positionSection = positionSectionMap.get(position);
+            MapSection positionSection = positionSectionMap.get(position);
             return positionSection.objectAt();
         }
         else{
@@ -153,14 +157,14 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
 
-    public String toString(){
-        return drawer.draw(lowerLeftCorner, upperRightCorner);
-    }
+//    public String toString(){
+//        return drawer.draw(lowerLeftCorner, upperRightCorner);
+//    }
 
     public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition){
-        IMapSection oldPositionSection = this.getSectionAtPosition(oldPosition);
+        MapSection oldPositionSection = this.getSectionAtPosition(oldPosition);
         oldPositionSection.removeAnimal(animal);
-        IMapSection newPositionSection = this.getSectionAtPosition(newPosition);
+        MapSection newPositionSection = this.getSectionAtPosition(newPosition);
         newPositionSection.placeAnimal(animal);
     }
 
@@ -172,7 +176,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         return this.getLowerLeftCorner();
     }
 
-    public Map<Vector2d, IMapSection> getPositionSectionMap(){
+    public Map<Vector2d, MapSection> getPositionSectionMap(){
         return this.positionSectionMap;
     }
 
@@ -188,7 +192,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         return plantEnergy;
     }
 
-    public float getJungleRatio() {
+    public double getJungleRatio() {
         return jungleRatio;
     }
 
@@ -226,7 +230,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         if (grassPosition == null) {
             throw new IllegalActionException("There is no place for a new grass in Jungle!!!");
         }
-        IMapSection grassSection = this.getSectionAtPosition(grassPosition);
+        MapSection grassSection = this.getSectionAtPosition(grassPosition);
         grassSection.spawnGrass();
     }
 
@@ -235,7 +239,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         if (grassPosition == null) {
             throw new IllegalActionException("There is no place for a new grass in Steppe!!!");
         }
-        IMapSection grassSection = this.getSectionAtPosition(grassPosition);
+        MapSection grassSection = this.getSectionAtPosition(grassPosition);
         grassSection.spawnGrass();
     }
 
@@ -354,7 +358,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
 
     public List<Animal> getAnimalsWithDominatingGenotype(){
         List<Animal> animalsWithDominatingGenotype = new ArrayList<>();
-        for(IMapSection section: this.positionSectionMap.values()){
+        for(MapSection section: this.positionSectionMap.values()){
             animalsWithDominatingGenotype.addAll(section.getAnimalsWithGenotype(this.dominatingGenotype));
         }
         return animalsWithDominatingGenotype;

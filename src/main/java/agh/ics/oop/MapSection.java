@@ -2,7 +2,7 @@ package agh.ics.oop;
 
 import java.util.*;
 
-public class IMapSection {
+public class MapSection {
     private AbstractWorldMap map;
     private Vector2d position;
     private SortedSet<Animal> animalsSortedByEnergyDescending;
@@ -13,7 +13,7 @@ public class IMapSection {
     private int numberOfAnimals;
     private List<IGrassExsistenceObserver> grassExistenceObservers = Collections.synchronizedList(new ArrayList<>());
 
-    public IMapSection(AbstractWorldMap map, Vector2d position){
+    public MapSection(AbstractWorldMap map, Vector2d position){
         this.map = map;
         this.position = position;
         this.animalsSortedByEnergyDescending = Collections.synchronizedSortedSet(new TreeSet<Animal>(new AnimalReversedComparator()));
