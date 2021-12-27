@@ -46,8 +46,8 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         this.jungleRatio = jungleRatio;
         this.lowerLeftCorner = new Vector2d(0,0);
         this.upperRightCorner = new Vector2d(width - 1, height - 1);
-        this.jungleWidth = getJungleWidth(width, jungleRatio);
-        this.jungleHeight = getJungleHeight(height, jungleRatio);
+        this.jungleWidth = calculateJungleWidth(width, jungleRatio);
+        this.jungleHeight = calculateJungleHeight(height, jungleRatio);
         this.jungleLowerLeftCorner = getJungleLowerLeftCorner(width, height, jungleWidth, jungleHeight);
         this.jungleUpperRightCorner = getJungleUpperRightCorner(width, height, jungleWidth, jungleHeight);
         this.jungleSurfaceArea = jungleWidth * jungleHeight;
@@ -74,7 +74,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
             for(int x = this.lowerLeftCorner.getX(); x <= this.upperRightCorner.getX(); x++){
                 Vector2d position = new Vector2d(x,y);
                 if(this.positionIsInJungle(position)) continue;
-                freePositionsInJungle[counter] = position;
+                freePositionsInSteppe[counter] = position;
                 counter++;
             }
         }
@@ -97,7 +97,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         int heightMarginSize = this.height - jungleHeight;
         int bottomMarginSize = heightMarginSize / 2;
 
-        return new Vector2d(leftMarginSize + jungleWidth, bottomMarginSize + jungleHeight);
+        return new Vector2d(leftMarginSize + jungleWidth - 1, bottomMarginSize + jungleHeight - 1);
     }
 
     private Vector2d getJungleLowerLeftCorner(int width, int height, int jungleWidth, int jungleHeight) {
@@ -110,12 +110,20 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         return new Vector2d(leftMarginSize, bottomMarginSize);
     }
 
-    private int getJungleHeight(int height, double jungleRatio) {
+    private int calculateJungleHeight(int height, double jungleRatio) {
         return (int) Math.round(height * jungleRatio);
     }
 
-    private int getJungleWidth(int width, double jungleRatio) {
+    private int calculateJungleWidth(int width, double jungleRatio) {
         return (int) Math.round(width * jungleRatio);
+    }
+
+    public int getJungleWidth() {
+        return jungleWidth;
+    }
+
+    public int getJungleHeight() {
+        return jungleHeight;
     }
 
     private MapSection getSectionAtPosition(Vector2d position){
@@ -169,11 +177,11 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     public Vector2d getUpperRightCorner(){
-        return this.getUpperRightCorner();
+        return this.upperRightCorner;
     }
 
     public Vector2d getLowerLeftCorner(){
-        return this.getLowerLeftCorner();
+        return this.lowerLeftCorner;
     }
 
     public Map<Vector2d, MapSection> getPositionSectionMap(){
@@ -377,4 +385,10 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     public abstract boolean bordersRunaround();
+
+    public Vector2d getRandomPosition() {
+        int x = getRandomNumberFrom0ToN(width);
+        int y = getRandomNumberFrom0ToN(height);
+        return new Vector2d(x,y);
+    }
 }

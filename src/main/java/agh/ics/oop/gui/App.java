@@ -2,15 +2,12 @@ package agh.ics.oop.gui;
 
 import agh.ics.oop.*;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import java.io.FileNotFoundException;
@@ -19,10 +16,12 @@ import java.util.Map;
 
 public class App extends Application {
 
-    final int columnWidth = 50;
-    final int rowHeight = 50;
-    final int elementSize = 30;
-    final int moveDelay = 300;
+    int sceneWidth = 800;
+    int sceneHeight = 800;
+    int columnWidth = 50;
+    int rowHeight = 50;
+    int elementSize = 30;
+    int moveDelay = 300;
 
     private int mapWidth;
     private int mapHeight;
@@ -56,17 +55,18 @@ public class App extends Application {
     private Button runaroundMapStartButton;
     private HBox fullScene;
     private VBox inputVBox;
+    private Stage primaryStage;
 
 
-    @Override
-    public void init(){
-//        engine = new SimulationEngine( map, positions, moveDelay);
-//        engineThread = new Thread(engine);
-    }
+//    @Override
+//    public void init(){
+////        engine = new SimulationEngine( map, positions, moveDelay);
+////        engineThread = new Thread(engine);
+//    }
 
     @Override
     public void start(Stage primaryStage) throws InterruptedException {
-
+        this.primaryStage = primaryStage;
         startScene = getStartScene();
         primaryStage.setScene(startScene);
         primaryStage.show();
@@ -104,11 +104,17 @@ public class App extends Application {
             plantEnergy = plantEnergySpinner.getValue();
             jungleRatio = jungleRatioSpinner.getValue();
 
+            adjustColumnWidth();
+            adjustRowHeight();
+
             try {
                 mainScene = getMainScene();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+
+            primaryStage.setScene(mainScene);
+            primaryStage.show();
 //            engineThread.interrupt();
 //            engine.setDirections(directions);
 //            engineThread = new Thread(engine);
@@ -120,8 +126,16 @@ public class App extends Application {
                 plantEnergyInputHBox, jungleRatioInputHBox, numberOfStartingAnimalsInputHBox, startButton);
         inputVBox.setAlignment(Pos.CENTER);
 
-        Scene startScene = new Scene(inputVBox, 800, 800);
+        Scene startScene = new Scene(inputVBox, sceneWidth, sceneHeight);
         return startScene;
+    }
+
+    private void adjustRowHeight() {
+        rowHeight = (sceneHeight - 150) / (2  * mapHeight);
+    }
+
+    private void adjustColumnWidth() {
+        columnWidth = (sceneWidth - 150) / (2 * mapWidth);
     }
 
     private Scene getMainScene() throws FileNotFoundException {

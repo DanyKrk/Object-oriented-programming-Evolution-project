@@ -15,4 +15,13 @@ public interface IWorldMap {
     Vector2d getUpperRightCorner();
 
     Vector2d getLowerLeftCorner();
+
+
+    int getStartEnergy();
+
+    boolean bordersRunaround();
+
+    int getWidth();
+
+    int getHeight();
 }
