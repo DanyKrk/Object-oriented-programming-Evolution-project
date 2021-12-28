@@ -32,6 +32,11 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
     private String southImageName = "src/main/resources/pig_down.png";
     private String eastImageName = "src/main/resources/pig_right.png";
     private String westImageName = "src/main/resources/pig_left.png";
+    private String northEastImageName = "src/main/resources/pig_right_up.png";
+    private String southEastImageName = "src/main/resources/pig_right_down.png";
+    private String northWestImageName = "src/main/resources/pig_left_up.png";
+    private String southWestImageName = "src/main/resources/pig_left_down.png";
+
     public final AbstractWorldMap map;
     private MapDirection orientation;
     private int energy;
@@ -56,6 +61,8 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
        this.numberOfChildren = 0;
        this.isTracked = false;
        this.trackedAncestor = null;
+       this.setRandomGenes();
+       this.energy = map.getStartEnergy();
     }
 
     private void addEnergyObserver(AbstractWorldMap map) {
@@ -162,6 +169,26 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
                 }
                 else throw new FileNotFoundException("No image name for animal");
             }
+            case SOUTHWEST -> {
+                if (southWestImageName.length() != 0) {
+                    return this.southWestImageName;
+                } else throw new FileNotFoundException("No image name for animal");
+            }
+            case NORTHWEST -> {
+                if (northWestImageName.length() != 0) {
+                    return this.northWestImageName;
+                } else throw new FileNotFoundException("No image name for animal");
+            }
+            case SOUTHEAST -> {
+                if (southEastImageName.length() != 0) {
+                    return this.southEastImageName;
+                } else throw new FileNotFoundException("No image name for animal");
+            }
+            case NORTHEAST -> {
+                if (northEastImageName.length() != 0) {
+                    return this.northEastImageName;
+                } else throw new FileNotFoundException("No image name for animal");
+            }
             default -> {
                 throw new FileNotFoundException("No image name for Animal");
             }
@@ -183,8 +210,9 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
 
     public void setRandomGenes(){
         this.genotype = new int[numberOfGenes];
-        for(int gene: genotype){
-            gene = getRandomNumberFrom0ToN(genesRange);
+        for(int i = 0; i<numberOfGenes; i++){
+            int number = getRandomNumberFrom0ToN(genesRange);
+            genotype[i] = number;
         }
         Arrays.sort(genotype);
     }
@@ -253,6 +281,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
     }
 
     public int compareTo(Object o) {
+        if (o == this) return 0;
         if (o instanceof Animal){
             int energyDiff = this.getEnergy() - ((Animal) o).getEnergy();
             if (energyDiff != 0){return energyDiff;}
@@ -260,7 +289,11 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
             if(Math.random() - 0.5 > 0) return 1;
             else return -1;
             }
-        return 0;
+        return -1;
+    }
+
+    public boolean equals(Object o){
+        return this == o;
     }
 
     public boolean readyForReproduction(){

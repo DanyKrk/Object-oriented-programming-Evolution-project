@@ -9,14 +9,17 @@ public class MapSection {
     private Grass grass;
     private boolean containsGrass;
     private boolean containsAnimal;
-    private List<IPopulationOfAnimalsObserver> populationOfAnimalsObservers = Collections.synchronizedList(new ArrayList<>());
+    private List<IPopulationOfAnimalsObserver> populationOfAnimalsObservers;
     private int numberOfAnimals;
-    private List<IGrassExsistenceObserver> grassExistenceObservers = Collections.synchronizedList(new ArrayList<>());
+    private List<IGrassExsistenceObserver> grassExistenceObservers;
 
     public MapSection(AbstractWorldMap map, Vector2d position){
+        populationOfAnimalsObservers = Collections.synchronizedList(new ArrayList<>());
+        grassExistenceObservers = Collections.synchronizedList(new ArrayList<>());
         this.map = map;
         this.position = position;
-        this.animalsSortedByEnergyDescending = Collections.synchronizedSortedSet(new TreeSet<Animal>(new AnimalReversedComparator()));
+//        this.animalsSortedByEnergyDescending = Collections.synchronizedSortedSet(new TreeSet<>(new AnimalReversedComparator()));
+        this.animalsSortedByEnergyDescending = Collections.synchronizedSortedSet(new TreeSet<>());
         this.grass = null;
         this.containsGrass = false;
         this.numberOfAnimals = 0;
@@ -107,7 +110,7 @@ public class MapSection {
     }
 
     public void grassEating(){
-        if (this.containsGrass){
+        if (this.containsGrass && animalsSortedByEnergyDescending.size() > 0){
             List<Animal> eatingAnimals = new ArrayList<Animal>();
             Animal firstAnimal = animalsSortedByEnergyDescending.first();
             animalsSortedByEnergyDescending.remove(firstAnimal);
@@ -206,5 +209,20 @@ public class MapSection {
             }
         }
         return animalsWithGenotype;
+    }
+
+    public List<Animal> getLivingAnimals() {
+        List<Animal> livingAnimals = new ArrayList<>();
+        Iterator<Animal> itr = this.animalsSortedByEnergyDescending.iterator();
+        while(itr.hasNext()){
+            Animal animal = itr.next();
+            livingAnimals.add(animal);
+        }
+        return livingAnimals;
+
+    }
+
+    public boolean containsAnimal() {
+        return this.animalsSortedByEnergyDescending.size() > 0;
     }
 }

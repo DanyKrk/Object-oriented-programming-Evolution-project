@@ -11,15 +11,10 @@ public class SimulationEngine implements IEngine{
 
     AbstractWorldMap map;
 
-    public SimulationEngine(AbstractWorldMap map, int numberOfStartingAnimals, int moveDelay){
-
+    public SimulationEngine(AbstractWorldMap map, int moveDelay){
+        this.map = map;
         this.moveDelay = moveDelay;
 
-        for(int i = 0; i < numberOfStartingAnimals; i++){
-            Vector2d position = map.getRandomPosition();
-            Animal animal = new Animal(map, position, 0);
-            map.manuallyPlaceNewAnimal(animal);
-        }
     }
     /**
      * Move the animal on the map according to the provided move directions. Every
@@ -27,19 +22,23 @@ public class SimulationEngine implements IEngine{
      *
      */
     public void run(){
-        map.removeDeadAnimals();
-        map.moveAnimals();
-        map.grassEating();
-        map.reproduction();
-        map.spawnGrassInJungle();
-        map.spawnGrassInSteppe();
-        map.dayPassed();
+        while(true) {
+//            synchronized (LockObject.INSTANCE) {
+                map.removeDeadAnimals();
+                map.moveAnimals();
+                map.grassEating();
+                map.reproduction();
+//                map.spawnGrassInJungle();
+//                map.spawnGrassInSteppe();
+                map.spawnGrasses();
+                map.dayPassed();
 
-        try {
-            Thread.sleep(moveDelay);
-        } catch (InterruptedException e) {
-            out.println("The engine was stopped while running!");
+                try {
+                    Thread.sleep(moveDelay);
+                } catch (InterruptedException e) {
+                    out.println("The engine was stopped while running!");
+                }
+//            }
         }
-
     }
 }

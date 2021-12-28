@@ -23,7 +23,8 @@ public class GuiElementBox{
 
         Label label = new Label(element.getLabel());
 
-        vbox = new VBox(imageView, label);
+//        vbox = new VBox(imageView, label);
+        vbox = new VBox(imageView);
         vbox.setAlignment(Pos.BASELINE_CENTER);
 
     }

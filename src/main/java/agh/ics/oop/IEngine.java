@@ -15,5 +15,4 @@ public interface IEngine extends Runnable {
      */
     void run();
 
-    void setDirections(MoveDirection[] directions);
 }

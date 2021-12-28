@@ -2,8 +2,10 @@ package agh.ics.oop.gui;
 
 import agh.ics.oop.*;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -14,9 +16,9 @@ import java.io.FileNotFoundException;
 import java.util.Map;
 
 
-public class App extends Application {
+public class App extends Application implements IDayObserver{
 
-    int sceneWidth = 800;
+    int sceneWidth = 1300;
     int sceneHeight = 800;
     int columnWidth = 50;
     int rowHeight = 50;
@@ -40,9 +42,11 @@ public class App extends Application {
     GridPane borderedMapGridPane;
     GridPane runaroundMapGridPane;
 
-//    GridPane gridPane = new GridPane();
-//    Thread engineThread;
-//    IEngine engine;
+    Thread borderedMapEngineThread;
+    IEngine borderedMapEngine;
+
+    Thread runaroundMapEngineThread;
+    IEngine runaroundMapEngine;
 
 //    TextField argsInput;
 //    VBox inputVBox;
@@ -56,7 +60,14 @@ public class App extends Application {
     private HBox fullScene;
     private VBox inputVBox;
     private Stage primaryStage;
-
+    private HBox borderedMapStartButtonHBox;
+    private HBox borderedMapStopButtonHBox;
+    private Button borderedMapStopButton;
+    private Button runaroundMapStopButton;
+    private HBox borderedMapStartStopButtonHBox;
+    private HBox runaroundMapStartStopButtonHBox;
+    private HBox runaroundMapStartButtonHBox;
+    private HBox runaroundMapStopButtonHBox;
 
 //    @Override
 //    public void init(){
@@ -103,9 +114,11 @@ public class App extends Application {
             moveEnergy = moveEnergySpinner.getValue();
             plantEnergy = plantEnergySpinner.getValue();
             jungleRatio = jungleRatioSpinner.getValue();
+            numberOfStartingAnimals = numberOfStartingAnimalsSpinner.getValue();
 
             adjustColumnWidth();
             adjustRowHeight();
+            adjustElementSize();
 
             try {
                 mainScene = getMainScene();
@@ -115,11 +128,6 @@ public class App extends Application {
 
             primaryStage.setScene(mainScene);
             primaryStage.show();
-//            engineThread.interrupt();
-//            engine.setDirections(directions);
-//            engineThread = new Thread(engine);
-//            engineThread.start();
-
         });
 
         inputVBox = new VBox(10, mapWidthInputHBox, mapHeightInputHBox, startEnergyInputHBox, moveEnergyInputHBox,
@@ -128,6 +136,11 @@ public class App extends Application {
 
         Scene startScene = new Scene(inputVBox, sceneWidth, sceneHeight);
         return startScene;
+    }
+
+    private void adjustElementSize() {
+        this.elementSize = Integer.min(rowHeight, columnWidth) - 20;
+        if (elementSize < 0) this.elementSize = 1;
     }
 
     private void adjustRowHeight() {
@@ -139,8 +152,15 @@ public class App extends Application {
     }
 
     private Scene getMainScene() throws FileNotFoundException {
-        runaroundMap = new RunaroundMap(mapWidth, mapHeight, startEnergy, moveEnergy, plantEnergy, jungleRatio);
-        borderedMap = new BorderedMap(mapWidth, mapHeight, startEnergy, moveEnergy, plantEnergy, jungleRatio);
+        runaroundMap = new RunaroundMap(mapWidth, mapHeight, startEnergy, moveEnergy, plantEnergy, jungleRatio, numberOfStartingAnimals);
+        borderedMap = new BorderedMap(mapWidth, mapHeight, startEnergy, moveEnergy, plantEnergy, jungleRatio, numberOfStartingAnimals);
+        runaroundMap.addDayObserver(this);
+        borderedMap.addDayObserver(this);
+
+        borderedMapEngine = new SimulationEngine(borderedMap, moveDelay);
+        borderedMapEngineThread = new Thread(borderedMapEngine);
+        runaroundMapEngine = new SimulationEngine(runaroundMap, moveDelay);
+        runaroundMapEngineThread = new Thread(runaroundMapEngine);
 
         runaroundMapGridPane = new GridPane();
         borderedMapGridPane = new GridPane();
@@ -148,10 +168,37 @@ public class App extends Application {
         fillGridPane(borderedMapGridPane, borderedMap);
         borderedMapStartButton = new Button("Start bordered map simulation");
         runaroundMapStartButton = new Button("Start runaround map simulation");
-        borderedMapVBox = new VBox(10, borderedMapGridPane, borderedMapStartButton);
-        runaroundMapVBox = new VBox(10, runaroundMapGridPane, runaroundMapStartButton);
+
+        borderedMapStopButton = new Button("Stop bordered map simulation");
+        runaroundMapStopButton = new Button("Stop runaround map simulation");
+
+        borderedMapStartButtonHBox = new HBox(50, borderedMapStartButton);
+        runaroundMapStartButtonHBox = new HBox(50, runaroundMapStartButton);
+
+        borderedMapStopButtonHBox = new HBox(50, borderedMapStopButton);
+        runaroundMapStopButtonHBox = new HBox(50, runaroundMapStopButton);
+
+        borderedMapStartStopButtonHBox = borderedMapStartButtonHBox;
+        runaroundMapStartStopButtonHBox = runaroundMapStartButtonHBox;
+
+
+        borderedMapVBox = new VBox(10, borderedMapGridPane, borderedMapStartStopButtonHBox);
+        runaroundMapVBox = new VBox(10, runaroundMapGridPane, runaroundMapStartStopButtonHBox);
         fullScene = new HBox(50, borderedMapVBox, runaroundMapVBox);
-        Scene mainScene = new Scene(fullScene, 800, 800);
+        Scene mainScene = new Scene(fullScene, sceneWidth, sceneHeight);
+
+
+
+        borderedMapStartButton.setOnAction(event -> {
+            borderedMapEngineThread.start();
+            borderedMapStartStopButtonHBox = borderedMapStopButtonHBox;
+//            engineThread.interrupt();
+//            engine.setDirections(directions);
+//            engineThread = new Thread(engine);
+//            engineThread.start();
+
+        });
+
         return mainScene;
     }
 
@@ -205,9 +252,9 @@ public class App extends Application {
 
         addRowAndColumnDescriptionsToGridPane(gridPane, upperRightCorner, lowerLeftCorner, width, height);
 
-        synchronized (LockObject.INSTANCE) {
+//        synchronized (LockObject.INSTANCE) {
             addAbstractWorldMapElementsToGridPane(gridPane, map, upperRightCorner, lowerLeftCorner);
-        }
+//        }
     }
 
 //    private void updateGridPane() throws FileNotFoundException {
@@ -310,5 +357,47 @@ public class App extends Application {
         VBox GuiElementVBox = box.getVbox();
         gridPane.add(GuiElementVBox, elementX - lowerLeftCorner.getX() + 1, upperRightCorner.getY() - elementY + 1);
         gridPane.setHalignment(label, HPos.CENTER);
+    }
+
+    @Override
+    public void dayPassed(AbstractWorldMap map) {
+        Platform.runLater(() -> {
+            try {
+                GridPane gridPane;
+                if (map.bordersRunaround()){
+                    gridPane = runaroundMapGridPane;
+                }
+                else {
+                    gridPane = borderedMapGridPane;
+                }
+                updateGridPane(gridPane, map);
+            } catch (FileNotFoundException e) {
+                System.out.println(e);
+            }
+        });
+    }
+
+    private void updateGridPane(GridPane gridPane, AbstractWorldMap map) throws FileNotFoundException {
+        gridPane.setGridLinesVisible(false);
+        gridPane.getColumnConstraints().clear();
+        gridPane.getRowConstraints().clear();
+        gridPane.getChildren().clear();
+
+        Vector2d upperRightCorner = map.getUpperRightCorner();
+        Vector2d lowerLeftCorner = map.getLowerLeftCorner();
+
+        int width = upperRightCorner.getX() - lowerLeftCorner.getX() + 2; //bo odejmowanie i dodatkowe kolumna/wiersz na indeksy
+        int height = upperRightCorner.getY() - lowerLeftCorner.getY() + 2;
+
+
+        addRowsAndColumnsToGridPane(gridPane, width, height);
+
+        addRowAndColumnDescriptionsToGridPane(gridPane, upperRightCorner, lowerLeftCorner, width, height);
+
+//        synchronized (LockObject.INSTANCE) {
+            addAbstractWorldMapElementsToGridPane(gridPane, map, upperRightCorner, lowerLeftCorner);
+//        }
+
+        gridPane.setGridLinesVisible(true);
     }
 }

@@ -1,5 +1,7 @@
 package agh.ics.oop;
 
+import agh.ics.oop.gui.App;
+
 import java.util.*;
 
 public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver, IPopulationOfAnimalsObserver,
@@ -25,8 +27,8 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     protected Vector2d lowerLeftCorner;
     private Vector2d jungleLowerLeftCorner;
     private Vector2d jungleUpperRightCorner;
-    protected Map<Vector2d, MapSection> positionSectionMap = Collections.synchronizedMap(new HashMap<>());
-    private Map<int[], Integer> genotypeNumberOfOwnersMap = Collections.synchronizedMap(new HashMap<>());
+    protected Map<Vector2d, MapSection> positionSectionMap;
+    private Map<int[], Integer> genotypeNumberOfOwnersMap;
     private int[] dominatingGenotype;
     private int numberOfAnimalsWithDominatingGenotype;
     private int energyOfLivingAnimals;
@@ -35,9 +37,13 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     private long lifespanOfDeadAnimals;
 //    protected MapVisualizer drawer;
     private int numberOfChildrenOfLivingAnimals;
+    private List<IDayObserver> dayObservers;
+    private int numberOfStartingAnimals;
 
 
-    public AbstractWorldMap(int width, int height, int startEnergy, int moveEnergy, int plantEnergy, double jungleRatio){
+    public AbstractWorldMap(int width, int height, int startEnergy, int moveEnergy, int plantEnergy, double jungleRatio, int numberOfStartingAnimals){
+        positionSectionMap = Collections.synchronizedMap(new HashMap<>());
+        genotypeNumberOfOwnersMap = Collections.synchronizedMap(new HashMap<>());
         this.width = width;
         this.height = height;
         this.startEnergy = startEnergy;
@@ -65,7 +71,17 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         this.energyOfLivingAnimals = 0;
         this.day = 0;
         this.lifespanOfDeadAnimals = 0;
-//        drawer = new MapVisualizer(this);
+        this.dayObservers = Collections.synchronizedList(new ArrayList<>());
+        this.numberOfStartingAnimals = numberOfStartingAnimals;
+        addStartingAnimalsToMap();
+    }
+
+    private void addStartingAnimalsToMap() {
+        for(int i = 0; i < numberOfStartingAnimals; i++){
+            Vector2d position = this.getRandomPosition();
+            Animal animal = new Animal(this, position, 0);
+            this.manuallyPlaceNewAnimal(animal);
+        }
     }
 
     private void fillFreePositionsInSteppe(){
@@ -233,41 +249,41 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         }
     }
 
-    public void spawnGrassInJungle(){
-        Vector2d grassPosition = this.getFreePositionInJungle();
-        if (grassPosition == null) {
-            throw new IllegalActionException("There is no place for a new grass in Jungle!!!");
-        }
-        MapSection grassSection = this.getSectionAtPosition(grassPosition);
-        grassSection.spawnGrass();
-    }
+//    public void spawnGrassInJungle(){
+//        Vector2d grassPosition = this.getFreePositionInJungle();
+//        if (grassPosition == null) {
+//            throw new IllegalActionException("There is no place for a new grass in Jungle!!!");
+//        }
+//        MapSection grassSection = this.getSectionAtPosition(grassPosition);
+//        grassSection.spawnGrass();
+//    }
+//
+//    public void spawnGrassInSteppe(){
+//        Vector2d grassPosition = this.getFreePositionInSteppe();
+//        if (grassPosition == null) {
+//            throw new IllegalActionException("There is no place for a new grass in Steppe!!!");
+//        }
+//        MapSection grassSection = this.getSectionAtPosition(grassPosition);
+//        grassSection.spawnGrass();
+//    }
 
-    public void spawnGrassInSteppe(){
-        Vector2d grassPosition = this.getFreePositionInSteppe();
-        if (grassPosition == null) {
-            throw new IllegalActionException("There is no place for a new grass in Steppe!!!");
-        }
-        MapSection grassSection = this.getSectionAtPosition(grassPosition);
-        grassSection.spawnGrass();
-    }
-
-    private Vector2d getFreePositionInSteppe() {
-        if (numberOfFreePositionsInSteppe == 0) return null;
-        int positionID = getRandomNumberFrom0ToN(numberOfFreePositionsInSteppe);
-        Vector2d freePosition = freePositionsInSteppe[positionID];
-        freePositionsInSteppe[positionID] = freePositionsInSteppe[numberOfFreePositionsInSteppe - 1];
-        numberOfFreePositionsInSteppe -= 1;
-        return freePosition;
-    }
-
-    private Vector2d getFreePositionInJungle() {
-        if (numberOfFreePositionsInJungle == 0) return null;
-        int positionID = getRandomNumberFrom0ToN(numberOfFreePositionsInJungle);
-        Vector2d freePosition = freePositionsInJungle[positionID];
-        freePositionsInJungle[positionID] = freePositionsInJungle[numberOfFreePositionsInJungle - 1];
-        numberOfFreePositionsInJungle -= 1;
-        return freePosition;
-    }
+//    private Vector2d getFreePositionInSteppe() {
+//        if (numberOfFreePositionsInSteppe == 0) return null;
+//        int positionID = getRandomNumberFrom0ToN(numberOfFreePositionsInSteppe);
+//        Vector2d freePosition = freePositionsInSteppe[positionID];
+//        freePositionsInSteppe[positionID] = freePositionsInSteppe[numberOfFreePositionsInSteppe - 1];
+//        numberOfFreePositionsInSteppe -= 1;
+//        return freePosition;
+//    }
+//
+//    private Vector2d getFreePositionInJungle() {
+//        if (numberOfFreePositionsInJungle == 0) return null;
+//        int positionID = getRandomNumberFrom0ToN(numberOfFreePositionsInJungle);
+//        Vector2d freePosition = freePositionsInJungle[positionID];
+//        freePositionsInJungle[positionID] = freePositionsInJungle[numberOfFreePositionsInJungle - 1];
+//        numberOfFreePositionsInJungle -= 1;
+//        return freePosition;
+//    }
 
     private int getRandomNumberFrom0ToN(int n) {
         return ((int)(Math.random() * 100)) % n;
@@ -390,5 +406,89 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         int x = getRandomNumberFrom0ToN(width);
         int y = getRandomNumberFrom0ToN(height);
         return new Vector2d(x,y);
+    }
+
+    public void removeDeadAnimals() {
+        for(MapSection section: this.positionSectionMap.values()){
+            section.removeDeadAnimals();
+        }
+    }
+
+    public void moveAnimals() {
+//        for(MapSection section: this.positionSectionMap.values()){
+//            section.moveAnimals();
+//
+//        }
+        List<Animal> livingAnimals = getLivingAnimals();
+        for(Animal animal: livingAnimals){
+            animal.move();
+        }
+
+    }
+
+    private List<Animal> getLivingAnimals() {
+        List<Animal> livingAnimals = new ArrayList<>();
+        for(MapSection section: this.positionSectionMap.values()) {
+            livingAnimals.addAll(section.getLivingAnimals());
+        }
+        return livingAnimals;
+    }
+
+    public void grassEating() {
+        for(MapSection section: this.positionSectionMap.values()){
+            section.grassEating();
+        }
+    }
+
+    public void reproduction() {
+        for(MapSection section: this.positionSectionMap.values()){
+            section.reproduction();
+        }
+    }
+
+    public void dayPassed() {
+        this.day += 1;
+        for(IDayObserver observer: dayObservers){
+            observer.dayPassed(this);
+        }
+    }
+
+    public void addDayObserver(IDayObserver observer) {
+        this.dayObservers.add(observer);
+    }
+
+
+    public void spawnGrasses() {
+        List<Vector2d> freePositionsInJungle = new ArrayList<>();
+        List<Vector2d> freePositionsInSteppe = new ArrayList<>();
+
+        for(int x = 0; x < width; x++){
+            for(int y = 0; y < width; y++){
+                Vector2d position = new Vector2d(x,y);
+                if(this.positionIsInJungle(position)){
+                    if(positionSectionMap.containsKey(position)){
+                        MapSection mapSection = positionSectionMap.get(position);
+                        if(mapSection.containsGrass() || mapSection.containsAnimal()) continue;
+                    }
+                    freePositionsInJungle.add(position);
+                }
+                else{
+                    if(positionSectionMap.containsKey(position)){
+                        MapSection mapSection = positionSectionMap.get(position);
+                        if(mapSection.containsGrass() || mapSection.containsAnimal()) continue;
+                    }
+                    freePositionsInSteppe.add(position);
+                }
+            }
+        }
+
+        int numberOfFreePositionsInSteppe = freePositionsInSteppe.size();
+        int numberOfFreePositionsInJungle = freePositionsInJungle.size();
+
+        Vector2d positionInJungleToPlaceGrass = freePositionsInJungle.get(getRandomNumberFrom0ToN(numberOfFreePositionsInJungle));
+        Vector2d positionInSteppeToPlaceGrass = freePositionsInSteppe.get(getRandomNumberFrom0ToN(numberOfFreePositionsInSteppe));
+
+        getSectionAtPosition(positionInJungleToPlaceGrass).spawnGrass();
+        getSectionAtPosition(positionInSteppeToPlaceGrass).spawnGrass();
     }
 }
