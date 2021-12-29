@@ -6,7 +6,7 @@ public interface IWorldMap {
 
     boolean canMoveTo(Vector2d position);
 
-    boolean manuallyPlaceNewAnimal(Animal animal);
+    boolean manuallyPlaceNewAnimal(Vector2d destination);
 
     Object objectAt(Vector2d position);
 

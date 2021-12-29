@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class AnimalGenesTest {
     int numberOfGenes = 32;
-    AbstractWorldMap testMap = new BorderedMap(10,10, 10, 10, 10, 0.5);
+    AbstractWorldMap testMap = new BorderedMap(10,10, 10, 10, 10, 0.5, 0);
     Vector2d testPosition1 = new Vector2d(0,0);
     Vector2d testPosition2 = new Vector2d(1,0);
     Vector2d testPosition3 = new Vector2d(0,1);
@@ -14,9 +14,9 @@ public class AnimalGenesTest {
     int weakerParentEnergy = 50;
 
     @Test void GeneTest1(){
-        Animal parent1 = new Animal(testMap, testPosition1, 0);
-        Animal parent2 = new Animal(testMap, testPosition2, 0);
-        Animal child = new Animal(testMap, testPosition3, 0);
+        Animal parent1 = new Animal(testMap, testPosition1, 0,0);
+        Animal parent2 = new Animal(testMap, testPosition2, 0,0);
+        Animal child = new Animal(testMap, testPosition3, 0,0);
         int[] testGenes1 = new int[numberOfGenes];
         int[] testGenes2 = new int[numberOfGenes];
         for (int i = 0; i < numberOfGenes; i++){

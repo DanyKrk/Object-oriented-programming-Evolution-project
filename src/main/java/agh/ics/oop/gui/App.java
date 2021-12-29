@@ -23,7 +23,7 @@ public class App extends Application implements IDayObserver{
     int columnWidth = 50;
     int rowHeight = 50;
     int elementSize = 30;
-    int moveDelay = 300;
+    int moveDelay = 1000;
 
     private int mapWidth;
     private int mapHeight;
@@ -84,25 +84,25 @@ public class App extends Application implements IDayObserver{
     }
 
     private Scene getStartScene() {
-        Spinner<Integer> mapWidthSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 8, 1);
+        Spinner<Integer> mapWidthSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 15, 1);
         HBox mapWidthInputHBox = getIntegerSpinnerHBox(mapWidthSpinner, "Map width: ");
 
-        Spinner<Integer> mapHeightSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 8, 1);
+        Spinner<Integer> mapHeightSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 15, 1);
         HBox mapHeightInputHBox = getIntegerSpinnerHBox(mapHeightSpinner, "Map height: ");
 
-        Spinner<Integer> startEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 100, 1);
+        Spinner<Integer> startEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 100, 10);
         HBox startEnergyInputHBox = getIntegerSpinnerHBox(startEnergySpinner, "Start energy: ");
 
-        Spinner<Integer> moveEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 10, 1);
+        Spinner<Integer> moveEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 3, 1);
         HBox moveEnergyInputHBox = getIntegerSpinnerHBox(moveEnergySpinner, "Move energy: ");
 
-        Spinner<Integer> plantEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 100, 1);
+        Spinner<Integer> plantEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 100, 100);
         HBox plantEnergyInputHBox = getIntegerSpinnerHBox(plantEnergySpinner, "Plant energy: ");
 
-        Spinner<Integer> numberOfStartingAnimalsSpinner = new Spinner<Integer>(10, Integer.MAX_VALUE, 10, 1);
+        Spinner<Integer> numberOfStartingAnimalsSpinner = new Spinner<Integer>(10, Integer.MAX_VALUE, 30, 10);
         HBox numberOfStartingAnimalsInputHBox = getIntegerSpinnerHBox(numberOfStartingAnimalsSpinner, "Number of starting animals: ");
 
-        Spinner<Double> jungleRatioSpinner = new Spinner<Double>(0.0, 1.0, 0.5, 0.1);
+        Spinner<Double> jungleRatioSpinner = new Spinner<Double>(0.0, 1.0, 0.25, 0.1);
         HBox jungleRatioInputHBox = getDoubleSpinnerHBox(jungleRatioSpinner, "Jungle ratio");
 
         startButton = new Button("Start");
@@ -145,10 +145,12 @@ public class App extends Application implements IDayObserver{
 
     private void adjustRowHeight() {
         rowHeight = (sceneHeight - 150) / (2  * mapHeight);
+        rowHeight = (sceneHeight - 150) / ( mapHeight);
     }
 
     private void adjustColumnWidth() {
         columnWidth = (sceneWidth - 150) / (2 * mapWidth);
+        columnWidth = (sceneWidth - 150) / (mapWidth);
     }
 
     private Scene getMainScene() throws FileNotFoundException {
@@ -370,7 +372,9 @@ public class App extends Application implements IDayObserver{
                 else {
                     gridPane = borderedMapGridPane;
                 }
-                updateGridPane(gridPane, map);
+                synchronized (LockObject.INSTANCE) {
+                    updateGridPane(gridPane, map);
+                }
             } catch (FileNotFoundException e) {
                 System.out.println(e);
             }

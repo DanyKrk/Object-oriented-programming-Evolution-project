@@ -39,7 +39,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
 
     public final AbstractWorldMap map;
     private MapDirection orientation;
-    private int energy;
+    private int energy = 0;
     private int[] genotype;
     private List<IPositionChangeObserver> positionChangeObservers = new ArrayList<>();
     private List<IAnimalEnergyObserver> energyObservers = new ArrayList<>();
@@ -50,9 +50,11 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
     private List<Animal> descendants;
     private boolean notifiesAncestor;
     private Animal trackedAncestor;
+    private Animal parent1;
+    private Animal parent2;
+    private boolean isAlive;
 
-
-    public Animal(AbstractWorldMap map, Vector2d initialPosition, long birthDay){
+    public Animal(AbstractWorldMap map, Vector2d initialPosition, long birthDay, int startEnergy){
        super(initialPosition);
        this.map = map;
        this.orientation = getRandomMapDirection();
@@ -62,18 +64,51 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
        this.isTracked = false;
        this.trackedAncestor = null;
        this.setRandomGenes();
-       this.energy = map.getStartEnergy();
+       this.setEnergy(startEnergy);
+       this.birthDay = birthDay;
+       this.parent1 = null;
+       this.parent2 = null;
+       this.isAlive = true;
     }
 
-    private void addEnergyObserver(AbstractWorldMap map) {
-        this.energyObservers.add(map);
+    public Animal(AbstractWorldMap map, Vector2d initialPosition, long birthDay, int startEnergy, Animal parent1, Animal parent2){
+        super(initialPosition);
+        this.map = map;
+        this.orientation = getRandomMapDirection();
+        this.addPositionChangeObserver(this.map);
+        this.addEnergyObserver(this.map);
+        this.numberOfChildren = 0;
+        this.isTracked = false;
+        this.trackedAncestor = null;
+        this.setGenesBasedOnParents(parent1, parent2);
+        this.setEnergy(startEnergy);
+        this.birthDay = birthDay;
+        this.parent1 = parent1;
+        this.parent2 = parent2;
+        this.isAlive = true;
     }
-
     @Override public String toString() {
         return orientation.toString();
     }
 
+    public boolean equals(Object o){
+        return this == o;
+    }
+
+    public int compareTo(Object o) {
+        if (o == this) return 0;
+        if (o instanceof Animal){
+            int energyDiff = this.getEnergy() - ((Animal) o).getEnergy();
+            if (energyDiff != 0){return energyDiff;}
+
+            if(Math.random() - 0.5 > 0) return 1;
+            else return -1;
+        }
+        return -1;
+    }
+
     public void move(){
+        this.setEnergy(this.getEnergy() - map.getMoveEnergy());
         Vector2d newPosition = this.position;
         Vector2d oldPosition = this.position;
 
@@ -117,6 +152,77 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         positionChanged(oldPosition,newPosition);
     }
 
+    public boolean readyForReproduction(){
+        return this.getEnergy() * 2 >= this.map.getStartEnergy();
+    }
+
+    public boolean isAlive(){
+        return this.isAlive;
+    }
+
+    public void die(long day){
+        this.isAlive = false;
+        this.setDeathDay(day);
+    }
+
+    public int extractEnergyForChild() {
+        int energyForChild = (int) (this.getEnergy() * 0.25);
+        this.setEnergy(this.getEnergy() - energyForChild);
+        return energyForChild;
+    }
+
+    public void startTracking(){
+        this.isTracked = true;
+        this.descendants = new ArrayList<>();
+    }
+
+    public void stopTracking(){
+        this.isTracked = false;
+        this.notifyDescendantsToForgetTrackedAncestor();
+        this.descendants = null;
+    }
+
+    private void forgetTrackedAncestor() {
+        this.notifiesAncestor = false;
+        this.trackedAncestor = null;
+    }
+
+    public void startNotifyingTrackedAncestor(Animal trackedAncestor){
+        this.trackedAncestor = trackedAncestor;
+        this.notifiesAncestor = true;
+    }
+
+    public boolean isTracked() {
+        return this.isTracked;
+    }
+
+    public boolean notifiesAncestor(){
+        return this.notifiesAncestor;
+    }
+
+    public Animal getTrackedAncestor() {
+        return trackedAncestor;
+    }
+
+    public int getNumberOfChildren() {
+        return this.numberOfChildren;
+    }
+
+    public int getNumberOfDescendants(){
+        if (!this.isTracked()){
+            throw new IllegalActionException("Trying to get number of descendants from not tracked Animal!!!");
+        }
+        else return this.descendants.size();
+    }
+
+    public long getBirthDay() {
+        return this.birthDay;
+    }
+
+    public long getDeathDay() {
+        return this.deathDay;
+    }
+
     private MoveDirection getRandomMoveDirectionBasedOnGenotype() {
         int directionID = genotype[getRandomNumberFrom0ToN(numberOfGenes)];
         MoveDirection direction = moveDirections[directionID];
@@ -129,18 +235,21 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         return direction;
     }
 
-    public void addPositionChangeObserver(IPositionChangeObserver observer){
-        this.positionChangeObservers.add(observer);
+    @Override
+    public String getLabel() {
+        return "A" + this.getPosition().toString();
     }
 
-    void removeObserver(IPositionChangeObserver observer){
-        this.positionChangeObservers.remove(observer);
+    public int getEnergy() {
+        return energy;
     }
 
-    void positionChanged(Vector2d oldPosition, Vector2d newPosition){
-        for(IPositionChangeObserver observer: positionChangeObservers){
-            observer.positionChanged(this, oldPosition, newPosition);
-        }
+    public int[] getGenotype() {
+        return genotype;
+    }
+
+    private int getRandomNumberFrom0ToN(int n) {
+        return ((int)(Math.random() * 100)) % n;
     }
 
     public String getImageName() throws FileNotFoundException {
@@ -195,17 +304,12 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         }
     }
 
-    @Override
-    public String getLabel() {
-        return "A" + this.getPosition().toString();
+    public Animal getParent1(){
+        return parent1;
     }
 
-    public int getEnergy() {
-        return energy;
-    }
-
-    public int[] getGenotype() {
-        return genotype;
+    public Animal getParent2(){
+        return parent2;
     }
 
     public void setRandomGenes(){
@@ -215,10 +319,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
             genotype[i] = number;
         }
         Arrays.sort(genotype);
-    }
-
-    private int getRandomNumberFrom0ToN(int n) {
-        return ((int)(Math.random() * 100)) % n;
+        genotype = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     }
 
     public void setGenesBasedOnParents(Animal parent1, Animal parent2){
@@ -264,6 +365,10 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         Arrays.sort(this.genotype);
     }
 
+    public void setDeathDay(long day) {
+        this.deathDay = day;
+    }
+
     public void setGenotype(int[] inputGenes){
         this.genotype = Arrays.copyOf(inputGenes,numberOfGenes);
     }
@@ -274,67 +379,21 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         this.energy = inputEnergy;
     }
 
-    private void energyChanged(int difference) {
-        for(IAnimalEnergyObserver observer: energyObservers){
-            observer.energyChanged(difference);
-        }
-    }
-
-    public int compareTo(Object o) {
-        if (o == this) return 0;
-        if (o instanceof Animal){
-            int energyDiff = this.getEnergy() - ((Animal) o).getEnergy();
-            if (energyDiff != 0){return energyDiff;}
-
-            if(Math.random() - 0.5 > 0) return 1;
-            else return -1;
-            }
-        return -1;
-    }
-
-    public boolean equals(Object o){
-        return this == o;
-    }
-
-    public boolean readyForReproduction(){
-        return this.getEnergy() * 2 >= this.map.getStartEnergy();
-    }
-
-    public int extractEnergyForChild() {
-        int energyForChild = (int) (this.getEnergy() * 0.25);
-        this.setEnergy(this.getEnergy() - energyForChild);
-        return energyForChild;
-    }
-
-    public long getBirthDay() {
-        return this.birthDay;
-    }
-
-    public long getDeathDay() {
-        return this.deathDay;
-    }
-
-    public void setDeathDay(long day) {
-        this.deathDay = day;
-    }
 
     public void incrementNumberOfChildren() {
         this.numberOfChildren += 1;
     }
 
-    public int getNumberOfChildren() {
-        return this.numberOfChildren;
+    void positionChanged(Vector2d oldPosition, Vector2d newPosition){
+        for(IPositionChangeObserver observer: positionChangeObservers){
+            observer.positionChanged(this, oldPosition, newPosition);
+        }
     }
 
-    public void startTracking(){
-        this.isTracked = true;
-        this.descendants = new ArrayList<>();
-    }
-
-    public void stopTracking(){
-        this.isTracked = false;
-        this.notifyDescendantsToForgetTrackedAncestor();
-        this.descendants = null;
+    private void energyChanged(int difference) {
+        for(IAnimalEnergyObserver observer: energyObservers){
+            observer.energyChanged(difference);
+        }
     }
 
     private void notifyDescendantsToForgetTrackedAncestor() {
@@ -343,36 +402,19 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         }
     }
 
-    private void forgetTrackedAncestor() {
-        this.notifiesAncestor = false;
-        this.trackedAncestor = null;
-    }
-
-    public void startNotifyingTrackedAncestor(Animal trackedAncestor){
-        this.trackedAncestor = trackedAncestor;
-        this.notifiesAncestor = true;
-    }
-
-    public boolean isTracked() {
-        return this.isTracked;
-    }
-
-    public boolean notifiesAncestor(){
-        return this.notifiesAncestor;
+    private void addEnergyObserver(AbstractWorldMap map) {
+        this.energyObservers.add(map);
     }
 
     public void addDescendant(Animal child) {
         this.descendants.add(child);
     }
 
-    public Animal getTrackedAncestor() {
-        return trackedAncestor;
+    public void addPositionChangeObserver(IPositionChangeObserver observer){
+        this.positionChangeObservers.add(observer);
     }
 
-    public int getNumberOfDescendants(){
-        if (!this.isTracked()){
-            throw new IllegalActionException("Trying to get number of descendants from not tracked Animal!!!");
-        }
-        else return this.descendants.size();
+    void removePositionChangeObserver(IPositionChangeObserver observer){
+        this.positionChangeObservers.remove(observer);
     }
 }

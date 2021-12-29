@@ -23,7 +23,7 @@ public class SimulationEngine implements IEngine{
      */
     public void run(){
         while(true) {
-//            synchronized (LockObject.INSTANCE) {
+            synchronized (LockObject.INSTANCE) {
                 map.removeDeadAnimals();
                 map.moveAnimals();
                 map.grassEating();
@@ -32,13 +32,16 @@ public class SimulationEngine implements IEngine{
 //                map.spawnGrassInSteppe();
                 map.spawnGrasses();
                 map.dayPassed();
-
+            }
+                long day = map.getDay();
+                if(day == 100){
+                    out.println("100 dzien");
+                }
                 try {
                     Thread.sleep(moveDelay);
                 } catch (InterruptedException e) {
                     out.println("The engine was stopped while running!");
                 }
-//            }
         }
     }
 }
