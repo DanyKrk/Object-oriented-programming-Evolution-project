@@ -659,20 +659,20 @@ public class App extends Application implements IDayObserver{
         gridPane.setGridLinesVisible(true);
     }
 
-    public void saveStatisticsToFile(AbstractWorldMap map){
-        List numberOfLivingAnimalsList;
-        List numberOfGrassesList;
-        List averageEnergyOfLivingAnimalsList;
-        List averageLifespanOfDeadAnimalsList;
-        List averageNumberOfChildrenOfLivingAnimalsList;
-
-        if(map.bordersRunaround()){
-            numberOfLivingAnimalsList = borderedMapNumberOfLivingAnimalsSeries.getData();
-        }
-        List<String[]> dataLines = new ArrayList<>();
-        for(int i = 0; i < )
-
-    }
+//    public void saveStatisticsToFile(AbstractWorldMap map){
+//        List numberOfLivingAnimalsList;
+//        List numberOfGrassesList;
+//        List averageEnergyOfLivingAnimalsList;
+//        List averageLifespanOfDeadAnimalsList;
+//        List averageNumberOfChildrenOfLivingAnimalsList;
+//
+//        if(map.bordersRunaround()){
+//            numberOfLivingAnimalsList = borderedMapNumberOfLivingAnimalsSeries.getData();
+//        }
+//        List<String[]> dataLines = new ArrayList<>();
+//        for(int i = 0; i < )
+//
+//    }
 
     public String convertToCSV(String[] data) {
         return Stream.of(data)
@@ -689,13 +689,13 @@ public class App extends Application implements IDayObserver{
         return escapedData;
     }
 
-    public void givenDataArray_whenConvertToCSV_thenOutputCreated() throws IOException {
-        File csvOutputFile = new File("statistics/outputfile.csv");
-        try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
-            dataLines.stream()
-                    .map(this::convertToCSV)
-                    .forEach(pw::println);
-        }
-        assertTrue(csvOutputFile.exists());
-    }
+//    public void givenDataArray_whenConvertToCSV_thenOutputCreated() throws IOException {
+//        File csvOutputFile = new File("statistics/outputfile.csv");
+//        try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
+//            dataLines.stream()
+//                    .map(this::convertToCSV)
+//                    .forEach(pw::println);
+//        }
+//        assertTrue(csvOutputFile.exists());
+//    }
 }
