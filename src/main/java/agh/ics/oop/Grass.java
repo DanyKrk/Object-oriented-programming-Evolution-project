@@ -21,6 +21,6 @@ public class Grass extends AbstractWorldMapElement{
 
     @Override
     public String getLabel() {
-        return "Grass";
+        return "";
     }
 }

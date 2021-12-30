@@ -58,7 +58,7 @@ public class MapSection {
 //                itr.remove();
 //            }
 //        }
-        long day = this.map.getDay();
+        int day = this.map.getDay();
         Iterator<Animal> itr = animals.iterator();
         while (itr.hasNext()) {
             Animal animal = itr.next();

@@ -11,9 +11,12 @@ public class SimulationEngine implements IEngine{
 
     AbstractWorldMap map;
 
+    boolean stopSignal = false;
+
     public SimulationEngine(AbstractWorldMap map, int moveDelay){
         this.map = map;
         this.moveDelay = moveDelay;
+
 
     }
     /**
@@ -22,26 +25,24 @@ public class SimulationEngine implements IEngine{
      *
      */
     public void run(){
-        while(true) {
+        while(!stopSignal) {
             synchronized (LockObject.INSTANCE) {
                 map.removeDeadAnimals();
                 map.moveAnimals();
                 map.grassEating();
                 map.reproduction();
-//                map.spawnGrassInJungle();
-//                map.spawnGrassInSteppe();
                 map.spawnGrasses();
                 map.dayPassed();
             }
-                long day = map.getDay();
-                if(day == 100){
-                    out.println("100 dzien");
-                }
                 try {
                     Thread.sleep(moveDelay);
                 } catch (InterruptedException e) {
                     out.println("The engine was stopped while running!");
                 }
         }
+    }
+
+    public void stop(){
+        this.stopSignal = true;
     }
 }

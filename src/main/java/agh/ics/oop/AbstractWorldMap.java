@@ -29,12 +29,13 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     private int numberOfAnimalsWithDominatingGenotype;
     private int energyOfLivingAnimals;
     private int numberOfDeadAnimals;
-    private long day;
-    private long lifespanOfDeadAnimals;
+    private int day;
+    private int lifespanOfDeadAnimals;
     private int numberOfChildrenOfLivingAnimals;
     private List<IDayObserver> dayObservers;
     private int numberOfStartingAnimals;
     private ArrayList<Animal> animalsThatDiedInADay;
+    private boolean readyForRun;
 
 
     public AbstractWorldMap(int width, int height, int startEnergy, int moveEnergy, int plantEnergy, double jungleRatio, int numberOfStartingAnimals){
@@ -204,7 +205,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         return ((int)(Math.random() * 100)) % n;
     }
 
-    public long getDay() {
+    public int getDay() {
         return this.day;
     }
 
@@ -256,6 +257,14 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         return this.height;
     }
 
+    public void setReadyForRun(){
+        this.readyForRun = true;
+    }
+
+    public void setNotReadyForRun(){
+        this.readyForRun = false;
+    }
+
     private void incrementNumberOfGenotypeOwners(int[] genotype) {
         this.genotypeNumberOfOwnersMap.put(genotype, genotypeNumberOfOwnersMap.getOrDefault(genotype,0) + 1);
         int numberOfAnimalsWithGenotype = this.genotypeNumberOfOwnersMap.get(genotype);
@@ -276,6 +285,10 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         if(genotypeNumberOfOwnersMap.get(genotype) + 1 == numberOfAnimalsWithDominatingGenotype){
             determineDominatingGenotype();
         }
+    }
+
+    public boolean isReadyForRun(){
+        return this.readyForRun;
     }
 
     private boolean positionIsInJungle(Vector2d position){

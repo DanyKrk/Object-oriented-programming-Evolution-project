@@ -1,5 +1,6 @@
 package agh.ics.oop.gui;
 
+import agh.ics.oop.Animal;
 import agh.ics.oop.Grass;
 import agh.ics.oop.IMapElement;
 import javafx.geometry.Pos;
@@ -14,7 +15,7 @@ import java.io.FileNotFoundException;
 public class GuiElementBox{
     private VBox vbox;
 
-    public GuiElementBox(IMapElement element, int elementSize) throws FileNotFoundException {
+    public GuiElementBox(App app, IMapElement element, int elementSize) throws FileNotFoundException {
         Image image = new Image(new FileInputStream(element.getImageName()));
 
         ImageView imageView = new ImageView(image);
@@ -23,9 +24,14 @@ public class GuiElementBox{
 
         Label label = new Label(element.getLabel());
 
-//        vbox = new VBox(imageView, label);
-        vbox = new VBox(imageView);
+        vbox = new VBox(imageView, label);
+//        vbox = new VBox(imageView);
         vbox.setAlignment(Pos.BASELINE_CENTER);
+
+        if(element instanceof Animal){
+            vbox.setOnMouseClicked(event -> app.changeTrackedAnimal((Animal) element));
+            ((Animal) element).startTracking();
+        }
 
     }
 

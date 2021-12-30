@@ -37,14 +37,15 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
     private String northWestImageName = "src/main/resources/pig_left_up.png";
     private String southWestImageName = "src/main/resources/pig_left_down.png";
 
+
     public final AbstractWorldMap map;
     private MapDirection orientation;
     private int energy = 0;
     private int[] genotype;
     private List<IPositionChangeObserver> positionChangeObservers = new ArrayList<>();
     private List<IAnimalEnergyObserver> energyObservers = new ArrayList<>();
-    private long birthDay;
-    private long deathDay;
+    private int birthDay;
+    private int deathDay;
     private int numberOfChildren;
     private boolean isTracked;
     private List<Animal> descendants;
@@ -54,7 +55,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
     private Animal parent2;
     private boolean isAlive;
 
-    public Animal(AbstractWorldMap map, Vector2d initialPosition, long birthDay, int startEnergy){
+    public Animal(AbstractWorldMap map, Vector2d initialPosition, int birthDay, int startEnergy){
        super(initialPosition);
        this.map = map;
        this.orientation = getRandomMapDirection();
@@ -71,7 +72,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
        this.isAlive = true;
     }
 
-    public Animal(AbstractWorldMap map, Vector2d initialPosition, long birthDay, int startEnergy, Animal parent1, Animal parent2){
+    public Animal(AbstractWorldMap map, Vector2d initialPosition, int birthDay, int startEnergy, Animal parent1, Animal parent2){
         super(initialPosition);
         this.map = map;
         this.orientation = getRandomMapDirection();
@@ -144,7 +145,12 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         }
         if ( !this.map.canMoveTo(newPosition)){
             if (this.map.bordersRunaround()) {
-                newPosition = new Vector2d(newPosition.getX() % this.map.getWidth(), newPosition.getY() % this.map.getHeight());
+                int x = newPosition.getX();
+                int width = this.map.getWidth();
+
+                int y = newPosition.getY();
+                int height = this.map.getHeight();
+                newPosition = new Vector2d( (x % width + width) % width, (y % height + height) % height);
             }
             else return;
         }
@@ -160,7 +166,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         return this.isAlive;
     }
 
-    public void die(long day){
+    public void die(int day){
         this.isAlive = false;
         this.setDeathDay(day);
     }
@@ -215,11 +221,11 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         else return this.descendants.size();
     }
 
-    public long getBirthDay() {
+    public int getBirthDay() {
         return this.birthDay;
     }
 
-    public long getDeathDay() {
+    public int getDeathDay() {
         return this.deathDay;
     }
 
@@ -237,11 +243,15 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
 
     @Override
     public String getLabel() {
-        return "A" + this.getPosition().toString();
+        return ("" + this.energy);
     }
 
     public int getEnergy() {
         return energy;
+    }
+
+    public AbstractWorldMap getMap() {
+        return map;
     }
 
     public int[] getGenotype() {
@@ -319,7 +329,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
             genotype[i] = number;
         }
         Arrays.sort(genotype);
-        genotype = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+//        genotype = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     }
 
     public void setGenesBasedOnParents(Animal parent1, Animal parent2){
@@ -365,7 +375,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         Arrays.sort(this.genotype);
     }
 
-    public void setDeathDay(long day) {
+    public void setDeathDay(int day) {
         this.deathDay = day;
     }
 
