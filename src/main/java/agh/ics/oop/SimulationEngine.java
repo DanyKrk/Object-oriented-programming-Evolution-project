@@ -33,7 +33,6 @@ public class SimulationEngine implements IEngine, IMagicEventObserver{
     public void run(){
         while(!stopSignal) {
             synchronized (LockObject.INSTANCE) {
-
                 if(isMagical && numberOfMagicalEvents < 3) map.magicallyRemoveDeadAnimals();
                 else map.removeDeadAnimals();
                 map.moveAnimals();

@@ -412,7 +412,10 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         animalsThatDiedInADay = new ArrayList<>();
         for(MapSection section: this.positionSectionMap.values()){
             section.magicallyRemoveDeadAnimals();
+            if (this.numberOfAnimals == 5) break;
         }
+        if (this.numberOfAnimals == 5) this.useMagic();
+
         for(Animal animal: animalsThatDiedInADay){
             if(animal.getParent1() != null) {
                 if (animal.getParent1().isAlive()) {
@@ -431,13 +434,13 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         List<Animal> livingAnimals = this.getLivingAnimals();
         for(Animal animal:livingAnimals) {
             Animal magicSon = animal.createMagicSon();
-            this.manuallyPlaceNewAnimal(animal);
+            this.manuallyPlaceNewAnimal(magicSon);
         }
-        this.magicHappeded();
+        this.magicHappened();
         this.numberOfMagicEvents += 1;
     }
 
-    public void magicHappeded() {
+    public void magicHappened() {
         for(IMagicEventObserver observer: this.magicEventObservers){
             observer.magicHappened(this);
         }

@@ -715,7 +715,7 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
             Animal trackedAnimal;
 
             try {
-                if (map.bordersRunaround()){
+                if (map.bordersRunaround()) {
                     gridPane = runaroundMapGridPane;
                     numberOfLivingAnimalsSeries = runaroundMapNumberOfLivingAnimalsSeries;
                     numberOfGrassesSeries = runaroundMapNumberOfGrassesSeries;
@@ -724,8 +724,7 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
                     averageNumberOfChildrenOfLivingAnimalsSeries = runaroundMapAverageNumberOfChildrenOfLivingAnimalsSeries;
                     dominatingGenotype = runaroundMapDominatingGenotypeLabel;
                     trackedAnimal = runaroundMapTrackedAnimal;
-                }
-                else {
+                } else {
                     gridPane = borderedMapGridPane;
                     numberOfLivingAnimalsSeries = borderedMapNumberOfLivingAnimalsSeries;
                     numberOfGrassesSeries = borderedMapNumberOfGrassesSeries;

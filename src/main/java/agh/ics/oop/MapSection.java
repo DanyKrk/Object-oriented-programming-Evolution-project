@@ -93,8 +93,7 @@ public class MapSection {
                 itr.remove();
                 animalDied(animal, day);
                 if(map.getNumberOfAnimals() == 5) {
-                    map.useMagic();
-                    return;
+                    break;
                 }
             }
         }
