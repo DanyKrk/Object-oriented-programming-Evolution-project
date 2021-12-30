@@ -323,6 +323,10 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
         return parent2;
     }
 
+    public Animal createMagicSon(){
+        return new Animal(this.map, this.map.getRandomFreePosition(), this.map.getDay(), this.map.getStartEnergy());
+    }
+
     public void setRandomGenes(){
         this.genotype = new int[numberOfGenes];
         for(int i = 0; i<numberOfGenes; i++){

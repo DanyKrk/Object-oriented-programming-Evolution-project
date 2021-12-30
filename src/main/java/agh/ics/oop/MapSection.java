@@ -72,6 +72,34 @@ public class MapSection {
         }
     }
 
+    public void magicallyRemoveDeadAnimals(){
+//        long day = this.map.getDay();
+//        Iterator<Animal> itr = animalsSortedByEnergyDescending.iterator();
+//        while (itr.hasNext()) {
+//            Animal animal = itr.next();
+//            if(animal.getEnergy() < this.map.getMoveEnergy()){
+//                this.decrementNumberOfAnimals();
+//                animal.setDeathDay(day);
+//                animalDied(animal, day);
+//                itr.remove();
+//            }
+//        }
+        int day = this.map.getDay();
+        Iterator<Animal> itr = animals.iterator();
+        while (itr.hasNext()) {
+            Animal animal = itr.next();
+            if(animal.getEnergy() < this.map.getMoveEnergy()){
+                animal.die(day);
+                itr.remove();
+                animalDied(animal, day);
+                if(map.getNumberOfAnimals() == 5) {
+                    map.useMagic();
+                    return;
+                }
+            }
+        }
+    }
+
     private void animalDied(Animal animal, long day) {
         for (IPopulationOfAnimalsObserver observer : populationOfAnimalsObservers) {
             observer.animalDied(animal);

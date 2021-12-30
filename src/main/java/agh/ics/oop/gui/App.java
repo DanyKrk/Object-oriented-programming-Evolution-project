@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class App extends Application implements IDayObserver{
+public class App extends Application implements IDayObserver, IMagicEventObserver{
 
     int sceneWidth = 1300;
     int sceneHeight = 800;
@@ -240,6 +241,8 @@ public class App extends Application implements IDayObserver{
         borderedMap = new BorderedMap(mapWidth, mapHeight, startEnergy, moveEnergy, plantEnergy, jungleRatio, numberOfStartingAnimals);
         runaroundMap.addDayObserver(this);
         borderedMap.addDayObserver(this);
+        runaroundMap.addMagicEventObserver(this);
+        borderedMap.addMagicEventObserver(this);
 
         borderedMapEngine = new SimulationEngine(borderedMap, moveDelay, borderedMapEvolutionRule);
         borderedMapEngineThread = new Thread(borderedMapEngine);
@@ -893,5 +896,27 @@ public class App extends Application implements IDayObserver{
                     .map(this::convertToCSV)
                     .forEach(pw::println);
         }
+    }
+
+    public void magicHappened(AbstractWorldMap map){
+//        Platform.runLater(() -> {
+//            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+//            alert.setTitle("Magic Alert!");
+//            int numberOfMagicEventsLeft = 3 - map.getNumberOfMagicEvents();
+//            alert.setContentText("Number of possible magic events left: " + numberOfMagicEventsLeft);
+//            if(map.bordersRunaround()){
+//                alert.setHeaderText("Magic event happened on runaround map!!!");
+//            }
+//            else{
+//                alert.setHeaderText("Magic event happened on bordered map!!!");
+//            }
+//            alert.show();
+//        });
+//        if(map.bordersRunaround()){
+//                runaroundMapMagicLabel.setText();
+//            }
+//            else{
+//                borderedMapMagicLabel.setText();
+//            }
     }
 }

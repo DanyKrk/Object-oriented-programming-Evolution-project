@@ -5,9 +5,11 @@ import java.util.List;
 
 import static java.lang.System.out;
 
-public class SimulationEngine implements IEngine{
+public class SimulationEngine implements IEngine, IMagicEventObserver{
 
     boolean isMagical;
+
+    int numberOfMagicalEvents;
 
     int moveDelay;
 
@@ -22,17 +24,17 @@ public class SimulationEngine implements IEngine{
             isMagical = false;
         }
         else isMagical = true;
+
+        this.numberOfMagicalEvents = 0;
+
+        this.map.addMagicEventObserver(this);
     }
-    /**
-     * Move the animal on the map according to the provided move directions. Every
-     * n-th direction should be sent to the n-th animal on the map.
-     *
-     */
+
     public void run(){
         while(!stopSignal) {
             synchronized (LockObject.INSTANCE) {
 
-                if(isMagical) map.magicallyRemoveDeadAnimals();
+                if(isMagical && numberOfMagicalEvents < 3) map.magicallyRemoveDeadAnimals();
                 else map.removeDeadAnimals();
                 map.moveAnimals();
                 map.grassEating();
@@ -50,5 +52,9 @@ public class SimulationEngine implements IEngine{
 
     public void stop(){
         this.stopSignal = true;
+    }
+
+    public void magicHappened(AbstractWorldMap map){
+        this.numberOfMagicalEvents += 1;
     }
 }

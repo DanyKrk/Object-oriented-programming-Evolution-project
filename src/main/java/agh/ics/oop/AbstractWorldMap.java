@@ -36,6 +36,8 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     private int numberOfStartingAnimals;
     private ArrayList<Animal> animalsThatDiedInADay;
     private boolean readyForRun;
+    private List<IMagicEventObserver> magicEventObservers;
+    private int numberOfMagicEvents;
 
 
     public AbstractWorldMap(int width, int height, int startEnergy, int moveEnergy, int plantEnergy, double jungleRatio, int numberOfStartingAnimals){
@@ -65,14 +67,17 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         this.day = 0;
         this.lifespanOfDeadAnimals = 0;
         this.dayObservers = Collections.synchronizedList(new ArrayList<>());
+        this.magicEventObservers = Collections.synchronizedList(new ArrayList<>());
         this.numberOfStartingAnimals = numberOfStartingAnimals;
+        this.numberOfMagicEvents = 0;
         addStartingAnimalsToMap();
     }
 
     private void addStartingAnimalsToMap() {
         for(int i = 0; i < numberOfStartingAnimals; i++){
             Vector2d position = this.getRandomPosition();
-            this.manuallyPlaceNewAnimal(position);
+            Animal animal = new Animal(this, position, 0, startEnergy);
+            this.manuallyPlaceNewAnimal(animal);
         }
     }
 
@@ -87,9 +92,8 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         }
         return sectionAtPosition;
     }
-    public boolean manuallyPlaceNewAnimal(Vector2d destination){
-        Animal animal = new Animal(this, destination, this.getDay(), startEnergy);
-        int[] genotype = animal.getGenotype();
+    public boolean manuallyPlaceNewAnimal(Animal animal){
+        Vector2d destination = animal.getPosition();
 
         if (canMoveTo(destination)) {
             MapSection destinationSection = getSectionAtPosition(destination);
@@ -269,6 +273,28 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         return this.height;
     }
 
+    public Vector2d getRandomFreePosition(){
+        List<Vector2d> freePositions = new ArrayList<>();
+
+        for(int x = 0; x < width; x++){
+            for(int y = 0; y < height; y++){
+                Vector2d position = new Vector2d(x,y);
+                if(positionSectionMap.containsKey(position)){
+                    MapSection mapSection = positionSectionMap.get(position);
+                    if(mapSection.containsGrass() || mapSection.containsAnimal()) continue;
+                }
+                freePositions.add(position);
+                }
+            }
+
+
+        int numberOfFreePositions = freePositions.size();
+        if(numberOfFreePositions > 0){
+            return freePositions.get(getRandomNumberFrom0ToN(numberOfFreePositions));
+        }
+        else throw new IllegalActionException("Free position doesn't exsist!");
+    };
+
     public void setReadyForRun(){
         this.readyForRun = true;
     }
@@ -385,7 +411,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     public void magicallyRemoveDeadAnimals() {
         animalsThatDiedInADay = new ArrayList<>();
         for(MapSection section: this.positionSectionMap.values()){
-            section.removeDeadAnimals();
+            section.magicallyRemoveDeadAnimals();
         }
         for(Animal animal: animalsThatDiedInADay){
             if(animal.getParent1() != null) {
@@ -398,6 +424,22 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
                     this.numberOfChildrenOfLivingAnimals -= 1;
                 }
             }
+        }
+    }
+
+    public void useMagic(){
+        List<Animal> livingAnimals = this.getLivingAnimals();
+        for(Animal animal:livingAnimals) {
+            Animal magicSon = animal.createMagicSon();
+            this.manuallyPlaceNewAnimal(animal);
+        }
+        this.magicHappeded();
+        this.numberOfMagicEvents += 1;
+    }
+
+    public void magicHappeded() {
+        for(IMagicEventObserver observer: this.magicEventObservers){
+            observer.magicHappened(this);
         }
     }
 
@@ -463,4 +505,11 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         this.dayObservers.add(observer);
     }
 
+    public void addMagicEventObserver(IMagicEventObserver observer) {
+        this.magicEventObservers.add(observer);
+    }
+
+    public int getNumberOfMagicEvents() {
+        return this.numberOfMagicEvents;
+    }
 }
