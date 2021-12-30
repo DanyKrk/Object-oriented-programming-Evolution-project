@@ -180,6 +180,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
     public void startTracking(){
         this.isTracked = true;
         this.descendants = new ArrayList<>();
+        this.numberOfChildren = 0;
     }
 
     public void stopTracking(){

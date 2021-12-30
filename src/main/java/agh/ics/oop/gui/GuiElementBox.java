@@ -29,8 +29,11 @@ public class GuiElementBox{
         vbox.setAlignment(Pos.BASELINE_CENTER);
 
         if(element instanceof Animal){
-            vbox.setOnMouseClicked(event -> app.changeTrackedAnimal((Animal) element));
-            ((Animal) element).startTracking();
+            vbox.setOnMouseClicked(event -> {
+                    ((Animal) element).startTracking();
+                    app.changeTrackedAnimal((Animal) element);
+            });
+
         }
 
     }

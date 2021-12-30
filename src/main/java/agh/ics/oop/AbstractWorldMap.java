@@ -24,7 +24,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     private Vector2d jungleLowerLeftCorner;
     private Vector2d jungleUpperRightCorner;
     protected Map<Vector2d, MapSection> positionSectionMap;
-    private Map<int[], Integer> genotypeNumberOfOwnersMap;
+    private Map<GenotypeMapKey, Integer> genotypeNumberOfOwnersMap;
     private int[] dominatingGenotype;
     private int numberOfAnimalsWithDominatingGenotype;
     private int energyOfLivingAnimals;
@@ -95,7 +95,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
             MapSection destinationSection = getSectionAtPosition(destination);
             destinationSection.placeAnimal(animal);
             this.numberOfAnimals += 1;
-            incrementNumberOfGenotypeOwners(genotype);
+//            incrementNumberOfGenotypeOwners(genotype);
             return true;
         }
         else {
@@ -148,11 +148,21 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     private void determineDominatingGenotype() {
-        for(Map.Entry<int[], Integer> entry : genotypeNumberOfOwnersMap.entrySet()) {
-            int[] genotype = entry.getKey();
+        genotypeNumberOfOwnersMap = new HashMap<>();
+        numberOfAnimalsWithDominatingGenotype = 0;
+        for(MapSection section: this.positionSectionMap.values()){
+            if(!section.containsAnimal()) continue;
+            for(Animal animal : section.getLivingAnimals()){
+                GenotypeMapKey key = new GenotypeMapKey(animal.getGenotype());
+                genotypeNumberOfOwnersMap.put(key, genotypeNumberOfOwnersMap.getOrDefault(key,0) + 1);
+            }
+        }
+
+        for(Map.Entry<GenotypeMapKey, Integer> entry : genotypeNumberOfOwnersMap.entrySet()) {
+            int[] genotype = entry.getKey().getGenotype();
             Integer numberOfOwners = entry.getValue();
 
-            if(numberOfOwners > numberOfAnimalsWithDominatingGenotype){
+            if(numberOfOwners >= numberOfAnimalsWithDominatingGenotype){
                 dominatingGenotype = genotype;
                 numberOfAnimalsWithDominatingGenotype = numberOfOwners;
             }
@@ -202,7 +212,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     private int getRandomNumberFrom0ToN(int n) {
-        return ((int)(Math.random() * 100)) % n;
+        return ((int)(Math.random() * 100000)) % n;
     }
 
     public int getDay() {
@@ -218,6 +228,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     public int[] getDominatingGenotype(){
+        this.determineDominatingGenotype();
         return this.dominatingGenotype;
     }
 
@@ -226,6 +237,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     public float getAverageLifespanOfDeadAnimals(){
+        if(numberOfDeadAnimals == 0) return 0;
         return lifespanOfDeadAnimals / (float)numberOfDeadAnimals;
     }
 
@@ -265,33 +277,38 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         this.readyForRun = false;
     }
 
-    private void incrementNumberOfGenotypeOwners(int[] genotype) {
-        this.genotypeNumberOfOwnersMap.put(genotype, genotypeNumberOfOwnersMap.getOrDefault(genotype,0) + 1);
-        int numberOfAnimalsWithGenotype = this.genotypeNumberOfOwnersMap.get(genotype);
-        if(numberOfAnimalsWithGenotype > numberOfAnimalsWithDominatingGenotype){
-            numberOfAnimalsWithDominatingGenotype = numberOfAnimalsWithGenotype;
-            dominatingGenotype = genotype;
-        }
-    }
+//    private void incrementNumberOfGenotypeOwners(int[] genotype) {
+//        GenotypeMapKey key = new GenotypeMapKey(genotype);
+//        this.genotypeNumberOfOwnersMap.put(key, genotypeNumberOfOwnersMap.getOrDefault(key,0) + 1);
+//        int numberOfAnimalsWithGenotype = this.genotypeNumberOfOwnersMap.get(key);
+//        if(numberOfAnimalsWithGenotype > numberOfAnimalsWithDominatingGenotype){
+//            numberOfAnimalsWithDominatingGenotype = numberOfAnimalsWithGenotype;
+//            dominatingGenotype = genotype;
+//        }
+//    }
 
-    private void decrementNumberOfGenotypeOwners(int[] genotype) {
-        if(! this.genotypeNumberOfOwnersMap.containsKey(genotype)) {
-            throw new IllegalActionException("No such genotype to decrement number of owners");
-        }
-        if(genotypeNumberOfOwnersMap.get(genotype) == 0) {
-            throw new IllegalActionException("No such genotype to decrement number of owners");
-        }
-        this.genotypeNumberOfOwnersMap.put(genotype, genotypeNumberOfOwnersMap.get(genotype) - 1);
-        if(genotypeNumberOfOwnersMap.get(genotype) + 1 == numberOfAnimalsWithDominatingGenotype){
-            determineDominatingGenotype();
-        }
-    }
+//    private void decrementNumberOfGenotypeOwners(int[] genotype) {
+//        GenotypeMapKey key = new GenotypeMapKey(genotype);
+//        if(! this.genotypeNumberOfOwnersMap.containsKey(key)) {
+//            throw new IllegalActionException("No such genotype to decrement number of owners");
+//        }
+//        if(genotypeNumberOfOwnersMap.get(key) == 0) {
+//            throw new IllegalActionException("No such genotype to decrement number of owners");
+//        }
+//        this.genotypeNumberOfOwnersMap.put(key, genotypeNumberOfOwnersMap.get(key) - 1);
+//        if(genotypeNumberOfOwnersMap.get(key) + 1 == numberOfAnimalsWithDominatingGenotype){
+//            determineDominatingGenotype();
+//        }
+//        if(genotypeNumberOfOwnersMap.get(key) == 0) {
+//            genotypeNumberOfOwnersMap.remove(key);
+//        }
+//    }
 
     public boolean isReadyForRun(){
         return this.readyForRun;
     }
 
-    private boolean positionIsInJungle(Vector2d position){
+    public boolean positionIsInJungle(Vector2d position){
         return (position.precedes(jungleUpperRightCorner) && position.follows(jungleLowerLeftCorner));
     }
 
@@ -320,7 +337,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     public void animalWasBorn(Animal animal){
-        this.incrementNumberOfGenotypeOwners(animal.getGenotype());
+//        this.incrementNumberOfGenotypeOwners(animal.getGenotype());
         this.numberOfAnimals += 1;
         this.numberOfChildrenOfLivingAnimals += 2;
     }
@@ -328,7 +345,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     public void animalDied(Animal animal){
         this.animalsThatDiedInADay.add(animal);
         this.lifespanOfDeadAnimals += animal.getDeathDay() - animal.getBirthDay();
-        this.decrementNumberOfGenotypeOwners(animal.getGenotype());
+//        this.decrementNumberOfGenotypeOwners(animal.getGenotype());
         this.numberOfAnimals -= 1;
         this.numberOfDeadAnimals += 1;
         this.energyOfLivingAnimals -= animal.getEnergy();
@@ -347,6 +364,25 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     public void removeDeadAnimals() {
+        animalsThatDiedInADay = new ArrayList<>();
+        for(MapSection section: this.positionSectionMap.values()){
+            section.removeDeadAnimals();
+        }
+        for(Animal animal: animalsThatDiedInADay){
+            if(animal.getParent1() != null) {
+                if (animal.getParent1().isAlive()) {
+                    this.numberOfChildrenOfLivingAnimals -= 1;
+                }
+            }
+            if(animal.getParent2() != null) {
+                if (animal.getParent2().isAlive()) {
+                    this.numberOfChildrenOfLivingAnimals -= 1;
+                }
+            }
+        }
+    }
+
+    public void magicallyRemoveDeadAnimals() {
         animalsThatDiedInADay = new ArrayList<>();
         for(MapSection section: this.positionSectionMap.values()){
             section.removeDeadAnimals();

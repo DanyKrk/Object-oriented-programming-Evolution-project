@@ -3,6 +3,8 @@ package agh.ics.oop.gui;
 import agh.ics.oop.*;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -123,6 +125,12 @@ public class App extends Application implements IDayObserver{
     private Label runaroundMapTrackedAnimalDeathDayLabel;
     private Animal borderedMapTrackedAnimal = null;
     private Animal runaroundMapTrackedAnimal = null;
+    private Button borderedMapShowAnimalsWithDominatingGenotypeButton;
+    private Button runaroundMapShowAnimalsWithDominatingGenotypeButton;
+    private Button borderedMapStopShowingAnimalsWithDominatingGenotypeButton;
+    private Button runaroundMapStopShowingAnimalsWithDominatingGenotypeButton;
+    private String borderedMapEvolutionRule;
+    private String runaroundMapEvolutionRule;
 
 //    @Override
 //    public void init(){
@@ -142,10 +150,10 @@ public class App extends Application implements IDayObserver{
         Spinner<Integer> moveDelaySpinner = new Spinner<Integer>(10, Integer.MAX_VALUE, 300, 25);
         HBox moveDelayInputHBox = getIntegerSpinnerHBox(moveDelaySpinner, "Move delay: ");
 
-        Spinner<Integer> mapWidthSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 15, 1);
+        Spinner<Integer> mapWidthSpinner = new Spinner<Integer>(1, 20, 15, 1);
         HBox mapWidthInputHBox = getIntegerSpinnerHBox(mapWidthSpinner, "Map width: ");
 
-        Spinner<Integer> mapHeightSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 15, 1);
+        Spinner<Integer> mapHeightSpinner = new Spinner<Integer>(1, 20, 15, 1);
         HBox mapHeightInputHBox = getIntegerSpinnerHBox(mapHeightSpinner, "Map height: ");
 
         Spinner<Integer> startEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 100, 10);
@@ -163,6 +171,16 @@ public class App extends Application implements IDayObserver{
         Spinner<Double> jungleRatioSpinner = new Spinner<Double>(0.0, 1.0, 0.25, 0.1);
         HBox jungleRatioInputHBox = getDoubleSpinnerHBox(jungleRatioSpinner, "Jungle ratio");
 
+        ObservableList<String> evolutionRules = FXCollections.observableArrayList("Magic", "Normal");
+
+        Spinner<String> runaroundMapEvolutionRuleSpinner = new Spinner<String>(evolutionRules);
+        Label runaroundMapEvolutionRuleLabel = new Label("Runaround map evolution rule: ");
+        HBox runaroundMapEvolutionRuleInputHBox = new HBox(runaroundMapEvolutionRuleLabel, runaroundMapEvolutionRuleSpinner);
+
+        Spinner<String> borderedMapEvolutionRuleSpinner = new Spinner<String>(evolutionRules);
+        Label borderedMapEvolutionRuleLabel = new Label("Bordered map evolution rule: ");
+        HBox borderedMapEvolutionRuleInputHBox = new HBox(borderedMapEvolutionRuleLabel, borderedMapEvolutionRuleSpinner);
+
         startButton = new Button("Start");
 
         startButton.setOnAction(event -> {
@@ -174,6 +192,8 @@ public class App extends Application implements IDayObserver{
             plantEnergy = plantEnergySpinner.getValue();
             jungleRatio = jungleRatioSpinner.getValue();
             numberOfStartingAnimals = numberOfStartingAnimalsSpinner.getValue();
+            borderedMapEvolutionRule = borderedMapEvolutionRuleSpinner.getValue();
+            runaroundMapEvolutionRule = runaroundMapEvolutionRuleSpinner.getValue();
 
             adjustColumnWidth();
             adjustRowHeight();
@@ -191,8 +211,9 @@ public class App extends Application implements IDayObserver{
 
 
         inputVBox = new VBox(10, moveDelayInputHBox, mapWidthInputHBox, mapHeightInputHBox, startEnergyInputHBox, moveEnergyInputHBox,
-                plantEnergyInputHBox, jungleRatioInputHBox, numberOfStartingAnimalsInputHBox, startButton);
-        inputVBox.setAlignment(Pos.CENTER);
+                plantEnergyInputHBox, jungleRatioInputHBox, numberOfStartingAnimalsInputHBox, borderedMapEvolutionRuleInputHBox, runaroundMapEvolutionRuleInputHBox,
+                startButton);
+        inputVBox.setAlignment(Pos.CENTER_LEFT);
 
         Scene startScene = new Scene(inputVBox, sceneWidth, sceneHeight);
         return startScene;
@@ -201,6 +222,7 @@ public class App extends Application implements IDayObserver{
     private void adjustElementSize() {
         this.elementSize = Integer.min(rowHeight, columnWidth) - 20;
         if (elementSize <= 15) this.elementSize = 15;
+
     }
 
     private void adjustRowHeight() {
@@ -219,9 +241,9 @@ public class App extends Application implements IDayObserver{
         runaroundMap.addDayObserver(this);
         borderedMap.addDayObserver(this);
 
-        borderedMapEngine = new SimulationEngine(borderedMap, moveDelay);
+        borderedMapEngine = new SimulationEngine(borderedMap, moveDelay, borderedMapEvolutionRule);
         borderedMapEngineThread = new Thread(borderedMapEngine);
-        runaroundMapEngine = new SimulationEngine(runaroundMap, moveDelay);
+        runaroundMapEngine = new SimulationEngine(runaroundMap, moveDelay, runaroundMapEvolutionRule);
         runaroundMapEngineThread = new Thread(runaroundMapEngine);
 
         borderedMapLabel = new Label("Bordered map");
@@ -232,23 +254,29 @@ public class App extends Application implements IDayObserver{
         fillGridPane(runaroundMapGridPane, runaroundMap);
         fillGridPane(borderedMapGridPane, borderedMap);
 
-        borderedMapStartButton = new Button("Start bordered map simulation");
-        runaroundMapStartButton = new Button("Start runaround map simulation");
+        borderedMapStartButton = new Button("Start");
+        runaroundMapStartButton = new Button("Start");
 
-        borderedMapStopButton = new Button("Stop bordered map simulation");
-        runaroundMapStopButton = new Button("Stop runaround map simulation");
+        borderedMapStopButton = new Button("Stop");
+        runaroundMapStopButton = new Button("Stop");
 
         borderedMapStartStopButtonsHBox = new HBox(borderedMapStartButton);
         runaroundMapStartStopButtonsHBox = new HBox(runaroundMapStartButton);
 
-        borderedMapShowMapStatisticsButton = new Button("Show map statistics");
-        borderedMapShowTrackedAnimalStatisticsButton = new Button("Show tracked animal statistics");
+        borderedMapShowMapStatisticsButton = new Button("Map statistics");
+        borderedMapShowTrackedAnimalStatisticsButton = new Button("Tracked animal statistics");
 
-        runaroundMapShowMapStatisticsButton = new Button("Show map statistics");
-        runaroundMapShowTrackedAnimalStatisticsButton = new Button("Show tracked animal statistics");
+        runaroundMapShowMapStatisticsButton = new Button("Map statistics");
+        runaroundMapShowTrackedAnimalStatisticsButton = new Button("Tracked animal statistics");
 
-        borderedMapShowStatisticsButtonsHBox = new HBox(borderedMapShowTrackedAnimalStatisticsButton);
-        runaroundMapShowStatisticsButtonsHBox = new HBox(runaroundMapShowTrackedAnimalStatisticsButton);
+        borderedMapShowAnimalsWithDominatingGenotypeButton = new Button("Dominating genotype animals");
+        runaroundMapShowAnimalsWithDominatingGenotypeButton = new Button("Dominating genotype animals");
+
+        borderedMapStopShowingAnimalsWithDominatingGenotypeButton = new Button("Stop showing animals with dominating genotype");
+        runaroundMapStopShowingAnimalsWithDominatingGenotypeButton = new Button("Stop showing animals with dominating genotype");
+
+        borderedMapShowStatisticsButtonsHBox = new HBox(borderedMapShowAnimalsWithDominatingGenotypeButton, borderedMapShowTrackedAnimalStatisticsButton);
+        runaroundMapShowStatisticsButtonsHBox = new HBox(runaroundMapShowAnimalsWithDominatingGenotypeButton, runaroundMapShowTrackedAnimalStatisticsButton);
 
         borderedMapSaveStatisticsButton = new Button("Save statistics to file");
         runaroundMapSaveStatisticsButton = new Button("Save statistics to file");
@@ -315,27 +343,36 @@ public class App extends Application implements IDayObserver{
         borderedMapVBox = new VBox(10, borderedMapLabel, borderedMapGridPane, borderedMapActionHBox, borderedMapChartVBox);
         runaroundMapVBox = new VBox(10, runaroundMapLabel, runaroundMapGridPane, runaroundMapActionHBox, runaroundMapChartVBox);
 
+        updateSeries(borderedMap, borderedMapNumberOfLivingAnimalsSeries, borderedMapNumberOfGrassesSeries, borderedMapAverageEnergyOfLivingAnimalsSeries,
+                borderedMapAverageLifespanOfDeadAnimalsSeries, borderedMapAverageNumberOfChildrenOfLivingAnimalsSeries);
+
+        updateSeries(runaroundMap, runaroundMapNumberOfLivingAnimalsSeries, runaroundMapNumberOfGrassesSeries, runaroundMapAverageEnergyOfLivingAnimalsSeries,
+                runaroundMapAverageLifespanOfDeadAnimalsSeries, runaroundMapAverageNumberOfChildrenOfLivingAnimalsSeries);
 
 
-        fullScene = new HBox(50, borderedMapVBox, runaroundMapVBox);
-
-
-//        setStartButtonActions(borderedMapStartButton, borderedMapEngineThread, borderedMapStartStopButtonsHBox, borderedMapStopButton);
-//        setStartButtonActions(runaroundMapStartButton, runaroundMapEngineThread, runaroundMapStartStopButtonsHBox, runaroundMapStopButton);
+        fullScene = new HBox(50, runaroundMapVBox, borderedMapVBox);
 
         borderedMapStartButton.setOnAction(event -> {
             borderedMapEngineThread = new Thread(borderedMapEngine);
             borderedMapEngineThread.start();
+
             borderedMapStartStopButtonsHBox.getChildren().clear();
             borderedMapStartStopButtonsHBox.getChildren().add(borderedMapStopButton);
+
+            borderedMapShowStatisticsButtonsHBox.getChildren().remove(borderedMapShowAnimalsWithDominatingGenotypeButton);
+
             borderedMapActionHBox.getChildren().remove(borderedMapSaveStatisticsButton);
         });
 
         runaroundMapStartButton.setOnAction(event -> {
             runaroundMapEngineThread = new Thread(runaroundMapEngine);
             runaroundMapEngineThread.start();
+
             runaroundMapStartStopButtonsHBox.getChildren().clear();
             runaroundMapStartStopButtonsHBox.getChildren().add(runaroundMapStopButton);
+
+            runaroundMapShowStatisticsButtonsHBox.getChildren().remove(runaroundMapShowAnimalsWithDominatingGenotypeButton);
+
             runaroundMapActionHBox.getChildren().remove(runaroundMapSaveStatisticsButton);
         });
 
@@ -344,6 +381,9 @@ public class App extends Application implements IDayObserver{
             borderedMapEngineThread = new Thread(borderedMapEngine);
             borderedMapStartStopButtonsHBox.getChildren().clear();
             borderedMapStartStopButtonsHBox.getChildren().add(borderedMapStartButton);
+
+            borderedMapShowStatisticsButtonsHBox.getChildren().add(borderedMapShowAnimalsWithDominatingGenotypeButton);
+
             borderedMapActionHBox.getChildren().add(borderedMapSaveStatisticsButton);
         });
 
@@ -352,7 +392,18 @@ public class App extends Application implements IDayObserver{
             runaroundMapEngineThread = new Thread(runaroundMapEngine);
             runaroundMapStartStopButtonsHBox.getChildren().clear();
             runaroundMapStartStopButtonsHBox.getChildren().add(runaroundMapStartButton);
+
+            runaroundMapShowStatisticsButtonsHBox.getChildren().add(runaroundMapShowAnimalsWithDominatingGenotypeButton);
+
             runaroundMapActionHBox.getChildren().add(runaroundMapSaveStatisticsButton);
+        });
+
+        borderedMapSaveStatisticsButton.setOnAction(event -> {
+            saveStatisticsToFile(borderedMap);
+        });
+
+        runaroundMapSaveStatisticsButton.setOnAction(event -> {
+            saveStatisticsToFile(runaroundMap);
         });
 
         setShowTrackedAnimalStatisticsButtonActions(borderedMapShowTrackedAnimalStatisticsButton, borderedMapShowStatisticsButtonsHBox, borderedMapShowMapStatisticsButton,
@@ -368,6 +419,18 @@ public class App extends Application implements IDayObserver{
 
         setShowMapStatisticsButtonActions(borderedMapShowMapStatisticsButton, borderedMapShowStatisticsButtonsHBox, borderedMapShowTrackedAnimalStatisticsButton,
                 borderedMapChartVBox, borderedMapChartHBox1, borderedMapChartHBox2, borderedMapDominatingGenotypeLabel);
+
+        setShowAnimalsWithDominatingGenotypeButtonActions(borderedMapShowAnimalsWithDominatingGenotypeButton, borderedMapActionHBox,
+                borderedMapStopShowingAnimalsWithDominatingGenotypeButton, borderedMapGridPane, borderedMap);
+
+        setShowAnimalsWithDominatingGenotypeButtonActions(runaroundMapShowAnimalsWithDominatingGenotypeButton, runaroundMapActionHBox,
+                runaroundMapStopShowingAnimalsWithDominatingGenotypeButton, runaroundMapGridPane, runaroundMap);
+
+        setStopShowingAnimalsWithDominatingGenotypeButtonActions(borderedMapStopShowingAnimalsWithDominatingGenotypeButton, borderedMapActionHBox,
+                borderedMapStartStopButtonsHBox, borderedMapShowStatisticsButtonsHBox, borderedMapSaveStatisticsButton, borderedMapGridPane, borderedMap);
+
+        setStopShowingAnimalsWithDominatingGenotypeButtonActions(runaroundMapStopShowingAnimalsWithDominatingGenotypeButton, runaroundMapActionHBox,
+                runaroundMapStartStopButtonsHBox, runaroundMapShowStatisticsButtonsHBox, runaroundMapSaveStatisticsButton, runaroundMapGridPane, runaroundMap);
 
         Scene mainScene = new Scene(fullScene, sceneWidth, sceneHeight);
         return mainScene;
@@ -386,7 +449,7 @@ public class App extends Application implements IDayObserver{
                                                              Label trackedAnimalNumberOfDescendantsLabel, Label trackedAnimalDeathDayLabel){
 
         showTrackedAnimalStatisticsButton.setOnAction(event -> {
-            ancestorHBox.getChildren().clear();
+            ancestorHBox.getChildren().remove(showTrackedAnimalStatisticsButton);
             ancestorHBox.getChildren().add(showMapStatisticsButton);
 
             chartBox.getChildren().clear();
@@ -397,13 +460,49 @@ public class App extends Application implements IDayObserver{
     private void setShowMapStatisticsButtonActions(Button showMapStatisticsButton, HBox ancestorHBox, Button showTrackedAnimalStatisticsButton, VBox chartBox,
                                                    HBox chartHBox1, HBox chartHBox2, Label dominatingGenotypeLabel){
         showMapStatisticsButton.setOnAction(event -> {
-            ancestorHBox.getChildren().clear();
+            ancestorHBox.getChildren().remove(showMapStatisticsButton);
             ancestorHBox.getChildren().add(showTrackedAnimalStatisticsButton);
 
             chartBox.getChildren().clear();
             chartBox.getChildren().addAll(chartHBox1, chartHBox2, dominatingGenotypeLabel);
         });
 
+    }
+
+    private void setShowAnimalsWithDominatingGenotypeButtonActions(Button showAnimalsWithDominatingGenotypeButton, HBox actionHBox,
+                                                                   Button stopShowingAnimalsWithDominatingGenotypeButton,
+                                                                   GridPane gridPane, AbstractWorldMap map){
+        showAnimalsWithDominatingGenotypeButton.setOnAction(event -> {
+            actionHBox.getChildren().clear();
+            actionHBox.getChildren().add(stopShowingAnimalsWithDominatingGenotypeButton);
+
+            synchronized (LockObject.INSTANCE) {
+                try {
+                    showAnimalsWithDominatingGenotype(gridPane, map);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+    }
+
+    private void setStopShowingAnimalsWithDominatingGenotypeButtonActions(Button stopShowingAnimalsWithDominatingGenotypeButton, HBox actionHBox, HBox startStopHBox,
+                                                                          HBox showStatisticsHBox, Button saveStatisticsButton, GridPane gridPane, AbstractWorldMap map){
+        stopShowingAnimalsWithDominatingGenotypeButton.setOnAction(event -> {
+            actionHBox.getChildren().clear();
+            actionHBox.getChildren().add(startStopHBox);
+            actionHBox.getChildren().add(showStatisticsHBox);
+            actionHBox.getChildren().add(saveStatisticsButton);
+
+            synchronized (LockObject.INSTANCE) {
+                try {
+                    updateGridPane(gridPane, map);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     // code based on tutorial from:
@@ -450,10 +549,25 @@ public class App extends Application implements IDayObserver{
     }
 
     public void changeTrackedAnimal(Animal animal){
-        this.setTrackedAnimal(animal);
-        this.updateTrackedAnimalStatistics(animal);
+        if (animal != borderedMapTrackedAnimal && animal != runaroundMapTrackedAnimal) {
+            this.sendSignalToStopTrackingAnimal(animal);
+            this.setTrackedAnimal(animal);
+            this.updateTrackedAnimalStatistics(animal);
+        }
     }
 
+    private void sendSignalToStopTrackingAnimal(Animal animal){
+        Animal trackedAnimal;
+        if(animal.getMap().bordersRunaround()){
+            trackedAnimal = runaroundMapTrackedAnimal;
+        }
+        else{
+            trackedAnimal = borderedMapTrackedAnimal;
+        }
+
+        if (trackedAnimal == null) return;
+        trackedAnimal.stopTracking();
+    }
     private void setTrackedAnimal(Animal animal){
         if(animal.getMap().bordersRunaround()){
             this.runaroundMapTrackedAnimal = animal;
@@ -479,7 +593,7 @@ public class App extends Application implements IDayObserver{
         }
     }
 
-    public void fillGridPane(GridPane gridPane, IWorldMap map) throws FileNotFoundException {
+    public void fillGridPane(GridPane gridPane, AbstractWorldMap map) throws FileNotFoundException {
         gridPane.setGridLinesVisible(true);
         Vector2d upperRightCorner = map.getUpperRightCorner();
         Vector2d lowerLeftCorner = map.getLowerLeftCorner();
@@ -497,7 +611,7 @@ public class App extends Application implements IDayObserver{
     }
 
 
-    private void addAbstractWorldMapElementsToGridPane(GridPane gridPane, IWorldMap map, Vector2d upperRightCorner, Vector2d lowerLeftCorner) throws FileNotFoundException {
+    private void addAbstractWorldMapElementsToGridPane(GridPane gridPane, AbstractWorldMap map, Vector2d upperRightCorner, Vector2d lowerLeftCorner) throws FileNotFoundException {
         Map<Vector2d, MapSection> positionSectionMap = map.getPositionSectionMap();
 
         for(MapSection section: positionSectionMap.values()) {
@@ -506,6 +620,29 @@ public class App extends Application implements IDayObserver{
             if (! (objectAtSection instanceof IMapElement)) continue;
             IMapElement IMapElementAtSection = (IMapElement) objectAtSection;
             addGuiElementBoxToGridPane(gridPane, upperRightCorner, lowerLeftCorner, IMapElementAtSection);
+        }
+    }
+
+    private void addAnimalsWithDominatingGenotypeToGridPane(GridPane gridPane, AbstractWorldMap map, Vector2d upperRightCorner, Vector2d lowerLeftCorner) throws FileNotFoundException {
+        Map<Vector2d, MapSection> positionSectionMap = map.getPositionSectionMap();
+        int numberOfAnimalsAdded = 0;
+        int[] dominatingGenotype = map.getDominatingGenotype();
+        for(MapSection section: positionSectionMap.values()) {
+            Animal animalToShow;
+            List<Animal> animalsWithDominatingGenotypeAtSection = section.getAnimalsWithGenotype(dominatingGenotype);
+
+            if(animalsWithDominatingGenotypeAtSection.size() > 0) {
+                animalToShow = animalsWithDominatingGenotypeAtSection.get(0);
+            }
+            else continue;
+
+            if (animalToShow == null) continue;
+            numberOfAnimalsAdded += 1;
+            IMapElement IMapElementAtSection = animalToShow;
+            addGuiElementBoxToGridPane(gridPane, upperRightCorner, lowerLeftCorner, IMapElementAtSection);
+        }
+        if(numberOfAnimalsAdded == 0){
+            System.out.println("cos nie tak");
         }
     }
 
@@ -659,43 +796,102 @@ public class App extends Application implements IDayObserver{
         gridPane.setGridLinesVisible(true);
     }
 
-//    public void saveStatisticsToFile(AbstractWorldMap map){
-//        List numberOfLivingAnimalsList;
-//        List numberOfGrassesList;
-//        List averageEnergyOfLivingAnimalsList;
-//        List averageLifespanOfDeadAnimalsList;
-//        List averageNumberOfChildrenOfLivingAnimalsList;
-//
-//        if(map.bordersRunaround()){
-//            numberOfLivingAnimalsList = borderedMapNumberOfLivingAnimalsSeries.getData();
+    private void showAnimalsWithDominatingGenotype(GridPane gridPane, AbstractWorldMap map) throws FileNotFoundException {
+        gridPane.setGridLinesVisible(false);
+        gridPane.getColumnConstraints().clear();
+        gridPane.getRowConstraints().clear();
+        gridPane.getChildren().clear();
+
+        Vector2d upperRightCorner = map.getUpperRightCorner();
+        Vector2d lowerLeftCorner = map.getLowerLeftCorner();
+
+        int width = upperRightCorner.getX() - lowerLeftCorner.getX() + 2; //bo odejmowanie i dodatkowe kolumna/wiersz na indeksy
+        int height = upperRightCorner.getY() - lowerLeftCorner.getY() + 2;
+
+
+        addRowsAndColumnsToGridPane(gridPane, width, height);
+
+        addRowAndColumnDescriptionsToGridPane(gridPane, upperRightCorner, lowerLeftCorner, width, height);
+
+//        synchronized (LockObject.INSTANCE) {
+        addAnimalsWithDominatingGenotypeToGridPane(gridPane, map, upperRightCorner, lowerLeftCorner);
 //        }
-//        List<String[]> dataLines = new ArrayList<>();
-//        for(int i = 0; i < )
-//
-//    }
+
+        gridPane.setGridLinesVisible(true);
+    }
+
+    public void saveStatisticsToFile(AbstractWorldMap map){
+        ObservableList<XYChart.Data<Number, Number>> numberOfLivingAnimalsList;
+        ObservableList<XYChart.Data<Number, Number>> numberOfGrassesList;
+        ObservableList<XYChart.Data<Number, Number>> averageEnergyOfLivingAnimalsList;
+        ObservableList<XYChart.Data<Number, Number>> averageLifespanOfDeadAnimalsList;
+        ObservableList<XYChart.Data<Number, Number>> averageNumberOfChildrenOfLivingAnimalsList;
+        String pathName;
+
+        if(map.bordersRunaround()){
+            pathName = "statistics/runaroundMapOutputFile.csv";
+            numberOfLivingAnimalsList = runaroundMapNumberOfLivingAnimalsSeries.getData();
+            numberOfGrassesList = runaroundMapNumberOfGrassesSeries.getData();
+            averageEnergyOfLivingAnimalsList = runaroundMapAverageEnergyOfLivingAnimalsSeries.getData();
+            averageLifespanOfDeadAnimalsList = runaroundMapAverageLifespanOfDeadAnimalsSeries.getData();
+            averageNumberOfChildrenOfLivingAnimalsList = runaroundMapAverageNumberOfChildrenOfLivingAnimalsSeries.getData();
+        }
+        else{
+            pathName = "statistics/borderedMapOutputFile.csv";
+            numberOfLivingAnimalsList = borderedMapNumberOfLivingAnimalsSeries.getData();
+            numberOfGrassesList = borderedMapNumberOfGrassesSeries.getData();
+            averageEnergyOfLivingAnimalsList = borderedMapAverageEnergyOfLivingAnimalsSeries.getData();
+            averageLifespanOfDeadAnimalsList = borderedMapAverageLifespanOfDeadAnimalsSeries.getData();
+            averageNumberOfChildrenOfLivingAnimalsList = borderedMapAverageNumberOfChildrenOfLivingAnimalsSeries.getData();
+        }
+
+        int dataLen = numberOfLivingAnimalsList.size();
+        List<String[]> dataLines = new ArrayList<>();
+        dataLines.add(new String[]{
+                "Day",
+                "Number of living animals",
+                "Number of grasses",
+                "Average energy of living animals",
+                "Average lifespan of dead animals",
+                "Average number of children of living animals"
+        });
+
+        for(int i = 0; i < dataLen; i++){
+            String[] dataLine = {
+                    numberOfLivingAnimalsList.get(i).getXValue().toString(),
+                    numberOfLivingAnimalsList.get(i).getYValue().toString(),
+                    numberOfGrassesList.get(i).getYValue().toString(),
+                    averageEnergyOfLivingAnimalsList.get(i).getYValue().toString(),
+                    averageLifespanOfDeadAnimalsList.get(i).getYValue().toString(),
+                    averageNumberOfChildrenOfLivingAnimalsList.get(i).getYValue().toString()
+            };
+            dataLines.add(dataLine);
+        }
+
+        try {
+            convertToCSVAndWriteDataToFile(dataLines, pathName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public String convertToCSV(String[] data) {
         return Stream.of(data)
                 .map(this::escapeSpecialCharacters)
-                .collect(Collectors.joining(","));
+                .collect(Collectors.joining(";"));
     }
 
     public String escapeSpecialCharacters(String data) {
-        String escapedData = data.replaceAll("\\R", " ");
-        if (data.contains(",") || data.contains("\"") || data.contains("'")) {
-            data = data.replace("\"", "\"\"");
-            escapedData = "\"" + data + "\"";
-        }
-        return escapedData;
+        data = data.replace(".", ",");
+        return data;
     }
 
-//    public void givenDataArray_whenConvertToCSV_thenOutputCreated() throws IOException {
-//        File csvOutputFile = new File("statistics/outputfile.csv");
-//        try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
-//            dataLines.stream()
-//                    .map(this::convertToCSV)
-//                    .forEach(pw::println);
-//        }
-//        assertTrue(csvOutputFile.exists());
-//    }
+    public void convertToCSVAndWriteDataToFile(List<String[]> dataLines, String pathName) throws IOException {
+        File csvOutputFile = new File(pathName);
+        try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
+            dataLines.stream()
+                    .map(this::convertToCSV)
+                    .forEach(pw::println);
+        }
+    }
 }

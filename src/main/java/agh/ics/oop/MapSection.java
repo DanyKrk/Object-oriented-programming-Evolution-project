@@ -10,6 +10,7 @@ public class MapSection {
     private List<IPopulationOfAnimalsObserver> populationOfAnimalsObservers;
     private List<IGrassExsistenceObserver> grassExistenceObservers;
     private List<Animal> animals;
+    private boolean isInJungle;
 
     public MapSection(AbstractWorldMap map, Vector2d position){
         populationOfAnimalsObservers = Collections.synchronizedList(new ArrayList<>());
@@ -22,6 +23,7 @@ public class MapSection {
         this.grass = null;
         this.addPopulationOfAnimalsObserver(map);
         this.addGrassExistenceObserver(map);
+        this.isInJungle = map.positionIsInJungle(position);
     }
 
     private void addGrassExistenceObserver(AbstractWorldMap map) {
@@ -157,6 +159,9 @@ public class MapSection {
         return animalWithMaxEnergy;
     }
 
+    public Vector2d getPosition(){
+        return this.position;
+    }
     private void linkTrackedAncestorWithDescendant(Animal trackedAncestor, Animal descendant) {
         trackedAncestor.addDescendant(descendant);
         descendant.startNotifyingTrackedAncestor(trackedAncestor);
@@ -226,7 +231,7 @@ public class MapSection {
                 Animal animal = eatingAnimals.get(i);
                 animal.setEnergy(animal.getEnergy() + 1);
             }
-
+            animals.add(firstAnimal);
             grassEaten(this.position);
         }
     }
@@ -297,7 +302,7 @@ public class MapSection {
         Iterator<Animal> itr = this.animals.iterator();
         while(itr.hasNext()){
             Animal animal = itr.next();
-            if(animal.getGenotype() == dominatingGenotype){
+            if(Arrays.equals(animal.getGenotype(), dominatingGenotype)){
                 animalsWithGenotype.add(animal);
             }
         }
@@ -327,5 +332,9 @@ public class MapSection {
 
     public boolean containsAnimal() {
      return this.animals.size() > 0;
+    }
+
+    public boolean isInJungle(){
+        return this.isInJungle;
     }
 }
