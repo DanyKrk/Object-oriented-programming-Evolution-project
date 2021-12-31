@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AbstractWorldMapJungleSteppeTest {
     int numberOfGenes = 32;
-    AbstractWorldMap testMap = new BorderedMap(10,10, 10, 10, 10, 0.5);
+    AbstractWorldMap testMap = new BorderedMap(10,10, 10, 10, 10, 0.5, 10);
     Vector2d testPosition1 = new Vector2d(0,0);
     Vector2d testPosition2 = new Vector2d(1,0);
     Vector2d testPosition3 = new Vector2d(0,1);
