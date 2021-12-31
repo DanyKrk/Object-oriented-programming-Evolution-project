@@ -132,6 +132,12 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
     private Button runaroundMapStopShowingAnimalsWithDominatingGenotypeButton;
     private String borderedMapEvolutionRule;
     private String runaroundMapEvolutionRule;
+    private Label runaroundMapMagicEventsLabel;
+    private Label borderedMapMagicEventsLabel;
+    private HBox borderedMapTopLabelsHBox;
+    private HBox runaroundMapTopLabelsHBox;
+    private int borderedMapNumberOfMagicEvents = 0;
+    private int runaroundMapNumberOfMagicEvents = 0;
 
 //    @Override
 //    public void init(){
@@ -151,22 +157,22 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         Spinner<Integer> moveDelaySpinner = new Spinner<Integer>(10, Integer.MAX_VALUE, 300, 25);
         HBox moveDelayInputHBox = getIntegerSpinnerHBox(moveDelaySpinner, "Move delay: ");
 
-        Spinner<Integer> mapWidthSpinner = new Spinner<Integer>(1, 20, 15, 1);
+        Spinner<Integer> mapWidthSpinner = new Spinner<Integer>(1, 20, 8, 1);
         HBox mapWidthInputHBox = getIntegerSpinnerHBox(mapWidthSpinner, "Map width: ");
 
-        Spinner<Integer> mapHeightSpinner = new Spinner<Integer>(1, 20, 15, 1);
+        Spinner<Integer> mapHeightSpinner = new Spinner<Integer>(1, 20, 8, 1);
         HBox mapHeightInputHBox = getIntegerSpinnerHBox(mapHeightSpinner, "Map height: ");
 
-        Spinner<Integer> startEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 100, 10);
+        Spinner<Integer> startEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 15, 10);
         HBox startEnergyInputHBox = getIntegerSpinnerHBox(startEnergySpinner, "Start energy: ");
 
         Spinner<Integer> moveEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 3, 1);
         HBox moveEnergyInputHBox = getIntegerSpinnerHBox(moveEnergySpinner, "Move energy: ");
 
-        Spinner<Integer> plantEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 100, 100);
+        Spinner<Integer> plantEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 75, 100);
         HBox plantEnergyInputHBox = getIntegerSpinnerHBox(plantEnergySpinner, "Plant energy: ");
 
-        Spinner<Integer> numberOfStartingAnimalsSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 30, 10);
+        Spinner<Integer> numberOfStartingAnimalsSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 8, 10);
         HBox numberOfStartingAnimalsInputHBox = getIntegerSpinnerHBox(numberOfStartingAnimalsSpinner, "Number of starting animals: ");
 
         Spinner<Double> jungleRatioSpinner = new Spinner<Double>(0.0, 1.0, 0.25, 0.1);
@@ -251,6 +257,23 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
 
         borderedMapLabel = new Label("Bordered map");
         runaroundMapLabel = new Label("Runaround map");
+
+        borderedMapMagicEventsLabel = new Label("Number of magic events: 0");
+        runaroundMapMagicEventsLabel = new Label("Number of magic events: 0");
+
+        if(borderedMapEvolutionRule == "Magic"){
+            borderedMapTopLabelsHBox = new HBox(10, borderedMapLabel, borderedMapMagicEventsLabel);
+        }
+        else{
+            borderedMapTopLabelsHBox = new HBox(10, borderedMapLabel);
+        }
+
+        if(runaroundMapEvolutionRule == "Magic"){
+            runaroundMapTopLabelsHBox = new HBox(10, runaroundMapLabel, runaroundMapMagicEventsLabel);
+        }
+        else{
+            runaroundMapTopLabelsHBox = new HBox(10, runaroundMapLabel);
+        }
 
         runaroundMapGridPane = new GridPane();
         borderedMapGridPane = new GridPane();
@@ -343,8 +366,8 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         borderedMapChartVBox = new VBox(10, borderedMapChartVBox, borderedMapDominatingGenotypeLabel);
         runaroundMapChartVBox = new VBox(10, runaroundMapChartVBox, runaroundMapDominatingGenotypeLabel);
 
-        borderedMapVBox = new VBox(10, borderedMapLabel, borderedMapGridPane, borderedMapActionHBox, borderedMapChartVBox);
-        runaroundMapVBox = new VBox(10, runaroundMapLabel, runaroundMapGridPane, runaroundMapActionHBox, runaroundMapChartVBox);
+        borderedMapVBox = new VBox(10, borderedMapTopLabelsHBox, borderedMapGridPane, borderedMapActionHBox, borderedMapChartVBox);
+        runaroundMapVBox = new VBox(10, runaroundMapTopLabelsHBox, runaroundMapGridPane, runaroundMapActionHBox, runaroundMapChartVBox);
 
         updateSeries(borderedMap, borderedMapNumberOfLivingAnimalsSeries, borderedMapNumberOfGrassesSeries, borderedMapAverageEnergyOfLivingAnimalsSeries,
                 borderedMapAverageLifespanOfDeadAnimalsSeries, borderedMapAverageNumberOfChildrenOfLivingAnimalsSeries);
@@ -898,24 +921,15 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
     }
 
     public void magicHappened(AbstractWorldMap map){
-//        Platform.runLater(() -> {
-//            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//            alert.setTitle("Magic Alert!");
-//            int numberOfMagicEventsLeft = 3 - map.getNumberOfMagicEvents();
-//            alert.setContentText("Number of possible magic events left: " + numberOfMagicEventsLeft);
-//            if(map.bordersRunaround()){
-//                alert.setHeaderText("Magic event happened on runaround map!!!");
-//            }
-//            else{
-//                alert.setHeaderText("Magic event happened on bordered map!!!");
-//            }
-//            alert.show();
-//        });
-//        if(map.bordersRunaround()){
-//                runaroundMapMagicLabel.setText();
-//            }
-//            else{
-//                borderedMapMagicLabel.setText();
-//            }
+        Platform.runLater(() -> {
+            if(map.bordersRunaround()){
+            runaroundMapNumberOfMagicEvents += 1;
+            runaroundMapMagicEventsLabel.setText("Number of magic events: " + runaroundMapNumberOfMagicEvents);
+        }
+        else{
+            borderedMapNumberOfMagicEvents += 1;
+            borderedMapMagicEventsLabel.setText("Number of magic events: " + borderedMapNumberOfMagicEvents);
+        }});
+
     }
 }
