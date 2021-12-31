@@ -2,7 +2,7 @@ package agh.ics.oop;
 
 import java.util.*;
 
-public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver, IPopulationOfAnimalsObserver,
+public abstract class AbstractWorldMap implements IPositionChangeObserver, IPopulationOfAnimalsObserver,
         IGrassExsistenceObserver, IAnimalEnergyObserver{
     private int startEnergy;
     private int moveEnergy;
@@ -16,8 +16,6 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     private int steppeSurfaceArea;
     private int numberOfGrassesInSteppe;
     private int numberOfGrassesInJungle;
-    private int numberOfFreePositionsInJungle;
-    private int numberOfFreePositionsInSteppe;
     private int numberOfAnimals;
     protected Vector2d upperRightCorner;
     protected Vector2d lowerLeftCorner;
@@ -35,7 +33,6 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     private List<IDayObserver> dayObservers;
     private int numberOfStartingAnimals;
     private ArrayList<Animal> animalsThatDiedInADay;
-    private boolean readyForRun;
     private List<IMagicEventObserver> magicEventObservers;
     private int numberOfMagicEvents;
 
@@ -60,8 +57,6 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         this.numberOfAnimals = 0;
         this.numberOfGrassesInSteppe = 0;
         this.numberOfGrassesInJungle = 0;
-        this.numberOfFreePositionsInJungle = jungleSurfaceArea;
-        this.numberOfFreePositionsInSteppe = steppeSurfaceArea;
         this.numberOfAnimalsWithDominatingGenotype = 0;
         this.energyOfLivingAnimals = 0;
         this.day = 0;
@@ -99,7 +94,6 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
             MapSection destinationSection = getSectionAtPosition(destination);
             destinationSection.placeAnimal(animal);
             this.numberOfAnimals += 1;
-//            incrementNumberOfGenotypeOwners(genotype);
             return true;
         }
         else {
@@ -295,45 +289,6 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         else throw new IllegalActionException("Free position doesn't exsist!");
     };
 
-    public void setReadyForRun(){
-        this.readyForRun = true;
-    }
-
-    public void setNotReadyForRun(){
-        this.readyForRun = false;
-    }
-
-//    private void incrementNumberOfGenotypeOwners(int[] genotype) {
-//        GenotypeMapKey key = new GenotypeMapKey(genotype);
-//        this.genotypeNumberOfOwnersMap.put(key, genotypeNumberOfOwnersMap.getOrDefault(key,0) + 1);
-//        int numberOfAnimalsWithGenotype = this.genotypeNumberOfOwnersMap.get(key);
-//        if(numberOfAnimalsWithGenotype > numberOfAnimalsWithDominatingGenotype){
-//            numberOfAnimalsWithDominatingGenotype = numberOfAnimalsWithGenotype;
-//            dominatingGenotype = genotype;
-//        }
-//    }
-
-//    private void decrementNumberOfGenotypeOwners(int[] genotype) {
-//        GenotypeMapKey key = new GenotypeMapKey(genotype);
-//        if(! this.genotypeNumberOfOwnersMap.containsKey(key)) {
-//            throw new IllegalActionException("No such genotype to decrement number of owners");
-//        }
-//        if(genotypeNumberOfOwnersMap.get(key) == 0) {
-//            throw new IllegalActionException("No such genotype to decrement number of owners");
-//        }
-//        this.genotypeNumberOfOwnersMap.put(key, genotypeNumberOfOwnersMap.get(key) - 1);
-//        if(genotypeNumberOfOwnersMap.get(key) + 1 == numberOfAnimalsWithDominatingGenotype){
-//            determineDominatingGenotype();
-//        }
-//        if(genotypeNumberOfOwnersMap.get(key) == 0) {
-//            genotypeNumberOfOwnersMap.remove(key);
-//        }
-//    }
-
-    public boolean isReadyForRun(){
-        return this.readyForRun;
-    }
-
     public boolean positionIsInJungle(Vector2d position){
         return (position.precedes(jungleUpperRightCorner) && position.follows(jungleLowerLeftCorner));
     }
@@ -515,4 +470,6 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     public int getNumberOfMagicEvents() {
         return this.numberOfMagicEvents;
     }
+
+    public abstract boolean bordersRunaround();
 }

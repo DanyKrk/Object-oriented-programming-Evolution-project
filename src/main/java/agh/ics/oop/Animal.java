@@ -333,9 +333,7 @@ public class Animal extends AbstractWorldMapElement implements Comparable{
             int number = getRandomNumberFrom0ToN(genesRange);
             genotype[i] = number;
         }
-        Arrays.sort(genotype);
-//        genotype = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-    }
+        Arrays.sort(genotype);}
 
     public void setGenesBasedOnParents(Animal parent1, Animal parent2){
         this.genotype = new int[numberOfGenes];

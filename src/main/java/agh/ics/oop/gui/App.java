@@ -11,7 +11,6 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
@@ -22,10 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,13 +57,8 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
     Thread runaroundMapEngineThread;
     IEngine runaroundMapEngine;
 
-    private Button startButton;
-    private VBox borderedMapVBox;
-    private VBox runaroundMapVBox;
     private Button borderedMapStartButton;
     private Button runaroundMapStartButton;
-    private HBox fullScene;
-    private VBox inputVBox;
     private Stage primaryStage;
     private Button borderedMapStopButton;
     private Button runaroundMapStopButton;
@@ -77,41 +68,19 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
     private HBox runaroundMapChartHBox;
 
     private XYChart.Series<Number, Number> borderedMapNumberOfLivingAnimalsSeries;
-    private LineChart<Number, Number> borderedMapNumberOfLivingAnimalsChart;
     private XYChart.Series<Number, Number> runaroundMapNumberOfLivingAnimalsSeries;
-    private LineChart<Number, Number> runaroundMapNumberOfLivingAnimalsChart;
     private XYChart.Series<Number, Number> borderedMapNumberOfGrassesSeries;
-    private LineChart<Number, Number> borderedMapNumberOfGrassesChart;
     private XYChart.Series<Number, Number> runaroundMapNumberOfGrassesSeries;
-    private LineChart<Number, Number> runaroundMapNumberOfGrassesChart;
     private XYChart.Series<Number, Number> borderedMapAverageEnergyOfLivingAnimalsSeries;
-    private LineChart<Number, Number> borderedMapAverageEnergyOfLivingAnimalsChart;
     private XYChart.Series<Number, Number> runaroundMapAverageEnergyOfLivingAnimalsSeries;
-    private LineChart<Number, Number> runaroundMapAverageEnergyOfLivingAnimalsChart;
     private XYChart.Series<Number, Number> borderedMapAverageLifespanOfDeadAnimalsSeries;
-    private LineChart<Number, Number> borderedMapAverageLifespanOfDeadAnimalsChart;
     private XYChart.Series<Number, Number> runaroundMapAverageLifespanOfDeadAnimalsSeries;
-    private LineChart<Number, Number> runaroundMapAverageLifespanOfDeadAnimalsChart;
     private XYChart.Series<Number, Number> borderedMapAverageNumberOfChildrenOfLivingAnimalsSeries;
-    private LineChart<Number, Number> borderedMapAverageNumberOfChildrenOfLivingAnimalsChart;
     private XYChart.Series<Number, Number> runaroundMapAverageNumberOfChildrenOfLivingAnimalsSeries;
-    private LineChart<Number, Number> runaroundMapAverageNumberOfChildrenOfLivingAnimalsChart;
-    private HBox borderedMapChartHBox1;
-    private HBox runaroundMapChartHBox1;
-    private HBox borderedMapChartHBox2;
-    private HBox runaroundMapChartHBox2;
-    private VBox borderedMapChartVBox;
-    private VBox runaroundMapChartVBox;
     private Label borderedMapDominatingGenotypeLabel;
     private Label runaroundMapDominatingGenotypeLabel;
-    private Label borderedMapLabel;
-    private Label runaroundMapLabel;
     private Button borderedMapSaveStatisticsButton;
-    private Button borderedMapShowMapStatisticsButton;
-    private Button borderedMapShowTrackedAnimalStatisticsButton;
     private Button runaroundMapSaveStatisticsButton;
-    private Button runaroundMapShowMapStatisticsButton;
-    private Button runaroundMapShowTrackedAnimalStatisticsButton;
     private HBox borderedMapStartStopButtonsHBox;
     private HBox runaroundMapStartStopButtonsHBox;
     private HBox borderedMapShowStatisticsButtonsHBox;
@@ -128,22 +97,13 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
     private Animal runaroundMapTrackedAnimal = null;
     private Button borderedMapShowAnimalsWithDominatingGenotypeButton;
     private Button runaroundMapShowAnimalsWithDominatingGenotypeButton;
-    private Button borderedMapStopShowingAnimalsWithDominatingGenotypeButton;
-    private Button runaroundMapStopShowingAnimalsWithDominatingGenotypeButton;
     private String borderedMapEvolutionRule;
     private String runaroundMapEvolutionRule;
     private Label runaroundMapMagicEventsLabel;
     private Label borderedMapMagicEventsLabel;
-    private HBox borderedMapTopLabelsHBox;
-    private HBox runaroundMapTopLabelsHBox;
     private int borderedMapNumberOfMagicEvents = 0;
     private int runaroundMapNumberOfMagicEvents = 0;
 
-//    @Override
-//    public void init(){
-////        engine = new SimulationEngine( map, positions, moveDelay);
-////        engineThread = new Thread(engine);
-//    }
 
     @Override
     public void start(Stage primaryStage) throws InterruptedException {
@@ -154,28 +114,28 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
     }
 
     private Scene getStartScene() {
-        Spinner<Integer> moveDelaySpinner = new Spinner<Integer>(10, Integer.MAX_VALUE, 300, 25);
+        Spinner<Integer> moveDelaySpinner = new Spinner<>(10, Integer.MAX_VALUE, 300, 25);
         HBox moveDelayInputHBox = getIntegerSpinnerHBox(moveDelaySpinner, "Move delay: ");
 
-        Spinner<Integer> mapWidthSpinner = new Spinner<Integer>(1, 20, 8, 1);
+        Spinner<Integer> mapWidthSpinner = new Spinner<>(1, 20, 8, 1);
         HBox mapWidthInputHBox = getIntegerSpinnerHBox(mapWidthSpinner, "Map width: ");
 
-        Spinner<Integer> mapHeightSpinner = new Spinner<Integer>(1, 20, 8, 1);
+        Spinner<Integer> mapHeightSpinner = new Spinner<>(1, 20, 8, 1);
         HBox mapHeightInputHBox = getIntegerSpinnerHBox(mapHeightSpinner, "Map height: ");
 
-        Spinner<Integer> startEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 15, 10);
+        Spinner<Integer> startEnergySpinner = new Spinner<>(1, Integer.MAX_VALUE, 20, 10);
         HBox startEnergyInputHBox = getIntegerSpinnerHBox(startEnergySpinner, "Start energy: ");
 
-        Spinner<Integer> moveEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 3, 1);
+        Spinner<Integer> moveEnergySpinner = new Spinner<>(1, Integer.MAX_VALUE, 3, 1);
         HBox moveEnergyInputHBox = getIntegerSpinnerHBox(moveEnergySpinner, "Move energy: ");
 
-        Spinner<Integer> plantEnergySpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 75, 100);
+        Spinner<Integer> plantEnergySpinner = new Spinner<>(1, Integer.MAX_VALUE, 75, 100);
         HBox plantEnergyInputHBox = getIntegerSpinnerHBox(plantEnergySpinner, "Plant energy: ");
 
-        Spinner<Integer> numberOfStartingAnimalsSpinner = new Spinner<Integer>(1, Integer.MAX_VALUE, 8, 10);
+        Spinner<Integer> numberOfStartingAnimalsSpinner = new Spinner<>(1, Integer.MAX_VALUE, 15, 10);
         HBox numberOfStartingAnimalsInputHBox = getIntegerSpinnerHBox(numberOfStartingAnimalsSpinner, "Number of starting animals: ");
 
-        Spinner<Double> jungleRatioSpinner = new Spinner<Double>(0.0, 1.0, 0.25, 0.1);
+        Spinner<Double> jungleRatioSpinner = new Spinner<>(0.0, 1.0, 0.25, 0.1);
         HBox jungleRatioInputHBox = getDoubleSpinnerHBox(jungleRatioSpinner, "Jungle ratio");
 
         ObservableList<String> evolutionRules = FXCollections.observableArrayList("Magic", "Normal");
@@ -188,7 +148,7 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         Label borderedMapEvolutionRuleLabel = new Label("Bordered map evolution rule: ");
         HBox borderedMapEvolutionRuleInputHBox = new HBox(borderedMapEvolutionRuleLabel, borderedMapEvolutionRuleSpinner);
 
-        startButton = new Button("Start");
+        Button startButton = new Button("Start");
 
         startButton.setOnAction(event -> {
             moveDelay = moveDelaySpinner.getValue();
@@ -217,13 +177,12 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         });
 
 
-        inputVBox = new VBox(10, moveDelayInputHBox, mapWidthInputHBox, mapHeightInputHBox, startEnergyInputHBox, moveEnergyInputHBox,
+        VBox inputVBox = new VBox(10, moveDelayInputHBox, mapWidthInputHBox, mapHeightInputHBox, startEnergyInputHBox, moveEnergyInputHBox,
                 plantEnergyInputHBox, jungleRatioInputHBox, numberOfStartingAnimalsInputHBox, borderedMapEvolutionRuleInputHBox, runaroundMapEvolutionRuleInputHBox,
                 startButton);
         inputVBox.setAlignment(Pos.CENTER_LEFT);
 
-        Scene startScene = new Scene(inputVBox, sceneWidth, sceneHeight);
-        return startScene;
+        return new Scene(inputVBox, sceneWidth, sceneHeight);
     }
 
     private void adjustElementSize() {
@@ -234,12 +193,10 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
 
     private void adjustRowHeight() {
         rowHeight = (sceneHeight - 150) / (2  * (mapHeight + 1));
-//        rowHeight = (sceneHeight - 150) / ( mapHeight);
     }
 
     private void adjustColumnWidth() {
         columnWidth = (sceneWidth - 150) / (2 * (mapWidth + 1));
-//        columnWidth = (sceneWidth - 150) / (mapWidth);
     }
 
     private Scene getMainScene() throws FileNotFoundException {
@@ -255,20 +212,22 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         runaroundMapEngine = new SimulationEngine(runaroundMap, moveDelay, runaroundMapEvolutionRule);
         runaroundMapEngineThread = new Thread(runaroundMapEngine);
 
-        borderedMapLabel = new Label("Bordered map");
-        runaroundMapLabel = new Label("Runaround map");
+        Label borderedMapLabel = new Label("Bordered map");
+        Label runaroundMapLabel = new Label("Runaround map");
 
         borderedMapMagicEventsLabel = new Label("Number of magic events: 0");
         runaroundMapMagicEventsLabel = new Label("Number of magic events: 0");
 
-        if(borderedMapEvolutionRule == "Magic"){
+        HBox borderedMapTopLabelsHBox;
+        if(Objects.equals(borderedMapEvolutionRule, "Magic")){
             borderedMapTopLabelsHBox = new HBox(10, borderedMapLabel, borderedMapMagicEventsLabel);
         }
         else{
             borderedMapTopLabelsHBox = new HBox(10, borderedMapLabel);
         }
 
-        if(runaroundMapEvolutionRule == "Magic"){
+        HBox runaroundMapTopLabelsHBox;
+        if(Objects.equals(runaroundMapEvolutionRule, "Magic")){
             runaroundMapTopLabelsHBox = new HBox(10, runaroundMapLabel, runaroundMapMagicEventsLabel);
         }
         else{
@@ -289,17 +248,17 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         borderedMapStartStopButtonsHBox = new HBox(borderedMapStartButton);
         runaroundMapStartStopButtonsHBox = new HBox(runaroundMapStartButton);
 
-        borderedMapShowMapStatisticsButton = new Button("Map statistics");
-        borderedMapShowTrackedAnimalStatisticsButton = new Button("Tracked animal statistics");
+        Button borderedMapShowMapStatisticsButton = new Button("Map statistics");
+        Button borderedMapShowTrackedAnimalStatisticsButton = new Button("Tracked animal statistics");
 
-        runaroundMapShowMapStatisticsButton = new Button("Map statistics");
-        runaroundMapShowTrackedAnimalStatisticsButton = new Button("Tracked animal statistics");
+        Button runaroundMapShowMapStatisticsButton = new Button("Map statistics");
+        Button runaroundMapShowTrackedAnimalStatisticsButton = new Button("Tracked animal statistics");
 
         borderedMapShowAnimalsWithDominatingGenotypeButton = new Button("Dominating genotype animals");
         runaroundMapShowAnimalsWithDominatingGenotypeButton = new Button("Dominating genotype animals");
 
-        borderedMapStopShowingAnimalsWithDominatingGenotypeButton = new Button("Stop showing animals with dominating genotype");
-        runaroundMapStopShowingAnimalsWithDominatingGenotypeButton = new Button("Stop showing animals with dominating genotype");
+        Button borderedMapStopShowingAnimalsWithDominatingGenotypeButton = new Button("Stop showing animals with dominating genotype");
+        Button runaroundMapStopShowingAnimalsWithDominatingGenotypeButton = new Button("Stop showing animals with dominating genotype");
 
         borderedMapShowStatisticsButtonsHBox = new HBox(borderedMapShowAnimalsWithDominatingGenotypeButton, borderedMapShowTrackedAnimalStatisticsButton);
         runaroundMapShowStatisticsButtonsHBox = new HBox(runaroundMapShowAnimalsWithDominatingGenotypeButton, runaroundMapShowTrackedAnimalStatisticsButton);
@@ -311,34 +270,34 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         runaroundMapActionHBox = new HBox(50, runaroundMapStartStopButtonsHBox, runaroundMapShowStatisticsButtonsHBox, runaroundMapSaveStatisticsButton);
 
         borderedMapNumberOfLivingAnimalsSeries = createSeries("Living animals");
-        borderedMapNumberOfLivingAnimalsChart = createChart("Day", "Animals", "Number of living animals", borderedMapNumberOfLivingAnimalsSeries);
+        LineChart<Number, Number> borderedMapNumberOfLivingAnimalsChart = createChart("Day", "Animals", "Number of living animals", borderedMapNumberOfLivingAnimalsSeries);
 
         runaroundMapNumberOfLivingAnimalsSeries = createSeries("Living animals");
-        runaroundMapNumberOfLivingAnimalsChart = createChart("Day", "Animals", "Number of living animals", runaroundMapNumberOfLivingAnimalsSeries);
+        LineChart<Number, Number> runaroundMapNumberOfLivingAnimalsChart = createChart("Day", "Animals", "Number of living animals", runaroundMapNumberOfLivingAnimalsSeries);
 
         borderedMapNumberOfGrassesSeries = createSeries("Grasses");
-        borderedMapNumberOfGrassesChart = createChart("Day", "Grasses", "Number of grasses", borderedMapNumberOfGrassesSeries);
+        LineChart<Number, Number> borderedMapNumberOfGrassesChart = createChart("Day", "Grasses", "Number of grasses", borderedMapNumberOfGrassesSeries);
 
         runaroundMapNumberOfGrassesSeries = createSeries("Grasses");
-        runaroundMapNumberOfGrassesChart = createChart("Day", "Grasses", "Number of grasses", runaroundMapNumberOfGrassesSeries);
+        LineChart<Number, Number> runaroundMapNumberOfGrassesChart = createChart("Day", "Grasses", "Number of grasses", runaroundMapNumberOfGrassesSeries);
 
         borderedMapAverageEnergyOfLivingAnimalsSeries = createSeries("Average energy of living animals");
-        borderedMapAverageEnergyOfLivingAnimalsChart = createChart("Day", "Average energy", "Average energy of living animals", borderedMapAverageEnergyOfLivingAnimalsSeries);
+        LineChart<Number, Number> borderedMapAverageEnergyOfLivingAnimalsChart = createChart("Day", "Average energy", "Average energy of living animals", borderedMapAverageEnergyOfLivingAnimalsSeries);
 
         runaroundMapAverageEnergyOfLivingAnimalsSeries = createSeries("Average energy of living animals");
-        runaroundMapAverageEnergyOfLivingAnimalsChart = createChart("Day", "Average energy", "Average energy of living animals", runaroundMapAverageEnergyOfLivingAnimalsSeries);
+        LineChart<Number, Number> runaroundMapAverageEnergyOfLivingAnimalsChart = createChart("Day", "Average energy", "Average energy of living animals", runaroundMapAverageEnergyOfLivingAnimalsSeries);
 
         borderedMapAverageLifespanOfDeadAnimalsSeries = createSeries("Average lifespan of dead animals");
-        borderedMapAverageLifespanOfDeadAnimalsChart = createChart("Day", "Average lifespan", "Average lifespan of dead animals", borderedMapAverageLifespanOfDeadAnimalsSeries);
+        LineChart<Number, Number> borderedMapAverageLifespanOfDeadAnimalsChart = createChart("Day", "Average lifespan", "Average lifespan of dead animals", borderedMapAverageLifespanOfDeadAnimalsSeries);
 
         runaroundMapAverageLifespanOfDeadAnimalsSeries = createSeries("Average lifespan of dead animals");
-        runaroundMapAverageLifespanOfDeadAnimalsChart = createChart("Day", "Average lifespan", "Average lifespan of dead animals", runaroundMapAverageLifespanOfDeadAnimalsSeries);
+        LineChart<Number, Number> runaroundMapAverageLifespanOfDeadAnimalsChart = createChart("Day", "Average lifespan", "Average lifespan of dead animals", runaroundMapAverageLifespanOfDeadAnimalsSeries);
 
         borderedMapAverageNumberOfChildrenOfLivingAnimalsSeries = createSeries("Average number of children of living animals");
-        borderedMapAverageNumberOfChildrenOfLivingAnimalsChart = createChart("Day", "Average number of children", "Average number of children of living animals", borderedMapAverageNumberOfChildrenOfLivingAnimalsSeries);
+        LineChart<Number, Number> borderedMapAverageNumberOfChildrenOfLivingAnimalsChart = createChart("Day", "Average number of children", "Average number of children of living animals", borderedMapAverageNumberOfChildrenOfLivingAnimalsSeries);
 
         runaroundMapAverageNumberOfChildrenOfLivingAnimalsSeries = createSeries("Average number of children of living animals");
-        runaroundMapAverageNumberOfChildrenOfLivingAnimalsChart = createChart("Day", "Average number of children", "Average number of children of living animals", runaroundMapAverageNumberOfChildrenOfLivingAnimalsSeries);
+        LineChart<Number, Number> runaroundMapAverageNumberOfChildrenOfLivingAnimalsChart = createChart("Day", "Average number of children", "Average number of children of living animals", runaroundMapAverageNumberOfChildrenOfLivingAnimalsSeries);
 
         borderedMapTrackedAnimalGenotypeLabel = new Label("Tracked animal genotype: - ");
         borderedMapTrackedAnimalNumberOfChildrenLabel = new Label("Tracked animal number of children: - ");
@@ -349,16 +308,16 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         runaroundMapTrackedAnimalNumberOfDescendantsLabel = new Label("Tracked animal number of descendants: - ");
         runaroundMapTrackedAnimalDeathDayLabel = new Label("Tracked animal day of death: - ");
 
-        borderedMapChartHBox1 = new HBox(10, borderedMapNumberOfLivingAnimalsChart, borderedMapNumberOfGrassesChart,
+        HBox borderedMapChartHBox1 = new HBox(10, borderedMapNumberOfLivingAnimalsChart, borderedMapNumberOfGrassesChart,
                 borderedMapAverageEnergyOfLivingAnimalsChart);
-        runaroundMapChartHBox1 = new HBox(10, runaroundMapNumberOfLivingAnimalsChart, runaroundMapNumberOfGrassesChart,
+        HBox runaroundMapChartHBox1 = new HBox(10, runaroundMapNumberOfLivingAnimalsChart, runaroundMapNumberOfGrassesChart,
                 runaroundMapAverageEnergyOfLivingAnimalsChart);
 
-        borderedMapChartHBox2 = new HBox(10, borderedMapAverageLifespanOfDeadAnimalsChart, borderedMapAverageNumberOfChildrenOfLivingAnimalsChart);
-        runaroundMapChartHBox2 = new HBox(10, runaroundMapAverageLifespanOfDeadAnimalsChart, runaroundMapAverageNumberOfChildrenOfLivingAnimalsChart);
+        HBox borderedMapChartHBox2 = new HBox(10, borderedMapAverageLifespanOfDeadAnimalsChart, borderedMapAverageNumberOfChildrenOfLivingAnimalsChart);
+        HBox runaroundMapChartHBox2 = new HBox(10, runaroundMapAverageLifespanOfDeadAnimalsChart, runaroundMapAverageNumberOfChildrenOfLivingAnimalsChart);
 
-        borderedMapChartVBox = new VBox(10,  borderedMapChartHBox1,  borderedMapChartHBox2);
-        runaroundMapChartVBox = new VBox(10, runaroundMapChartHBox1, runaroundMapChartHBox2);
+        VBox borderedMapChartVBox = new VBox(10, borderedMapChartHBox1, borderedMapChartHBox2);
+        VBox runaroundMapChartVBox = new VBox(10, runaroundMapChartHBox1, runaroundMapChartHBox2);
 
         borderedMapDominatingGenotypeLabel = new Label("Dominating genotype: " + Arrays.toString(borderedMap.getDominatingGenotype()));
         runaroundMapDominatingGenotypeLabel = new Label("Dominating genotype: " + Arrays.toString(runaroundMap.getDominatingGenotype()));
@@ -366,8 +325,8 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         borderedMapChartVBox = new VBox(10, borderedMapChartVBox, borderedMapDominatingGenotypeLabel);
         runaroundMapChartVBox = new VBox(10, runaroundMapChartVBox, runaroundMapDominatingGenotypeLabel);
 
-        borderedMapVBox = new VBox(10, borderedMapTopLabelsHBox, borderedMapGridPane, borderedMapActionHBox, borderedMapChartVBox);
-        runaroundMapVBox = new VBox(10, runaroundMapTopLabelsHBox, runaroundMapGridPane, runaroundMapActionHBox, runaroundMapChartVBox);
+        VBox borderedMapVBox = new VBox(10, borderedMapTopLabelsHBox, borderedMapGridPane, borderedMapActionHBox, borderedMapChartVBox);
+        VBox runaroundMapVBox = new VBox(10, runaroundMapTopLabelsHBox, runaroundMapGridPane, runaroundMapActionHBox, runaroundMapChartVBox);
 
         updateSeries(borderedMap, borderedMapNumberOfLivingAnimalsSeries, borderedMapNumberOfGrassesSeries, borderedMapAverageEnergyOfLivingAnimalsSeries,
                 borderedMapAverageLifespanOfDeadAnimalsSeries, borderedMapAverageNumberOfChildrenOfLivingAnimalsSeries);
@@ -376,7 +335,7 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
                 runaroundMapAverageLifespanOfDeadAnimalsSeries, runaroundMapAverageNumberOfChildrenOfLivingAnimalsSeries);
 
 
-        fullScene = new HBox(50, runaroundMapVBox, borderedMapVBox);
+        HBox fullScene = new HBox(50, runaroundMapVBox, borderedMapVBox);
 
         borderedMapStartButton.setOnAction(event -> {
             borderedMapEngineThread = new Thread(borderedMapEngine);
@@ -462,14 +421,6 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         return mainScene;
     }
 
-//    private void setStartButtonActions(Button startButton, Thread engineThread, HBox ancestorHBox, Button stopButton) {
-//        startButton.setOnAction(event -> {
-//            engineThread.start();
-//            ancestorHBox.getChildren().clear();
-//            ancestorHBox.getChildren().add(stopButton);
-//        });
-//    }
-
     private void setShowTrackedAnimalStatisticsButtonActions(Button showTrackedAnimalStatisticsButton, HBox ancestorHBox, Button showMapStatisticsButton,
                                                              VBox chartBox, Label trackedAnimalGenomeLabel, Label trackedAnimalNumberOfChildrenLabel,
                                                              Label trackedAnimalNumberOfDescendantsLabel, Label trackedAnimalDeathDayLabel){
@@ -537,13 +488,13 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         final NumberAxis xAxis = new NumberAxis(); // we are gonna plot against time
         final NumberAxis yAxis = new NumberAxis();
         xAxis.setLabel(xAxsisLabel);
-        xAxis.setAnimated(false); // axis animations are removed
+        xAxis.setAnimated(false);
         yAxis.setLabel(yAxisLabel);
-        yAxis.setAnimated(false); // axis animations are removed
+        yAxis.setAnimated(false);
 
         final LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
         lineChart.setTitle(chartTitle);
-        lineChart.setAnimated(false); // disable animations
+        lineChart.setAnimated(false);
 
         lineChart.getData().add(series);
 
@@ -624,7 +575,7 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         Vector2d upperRightCorner = map.getUpperRightCorner();
         Vector2d lowerLeftCorner = map.getLowerLeftCorner();
 
-        int width = upperRightCorner.getX() - lowerLeftCorner.getX() + 2; //bo odejmowanie i dodatkowe kolumna/wiersz na indeksy
+        int width = upperRightCorner.getX() - lowerLeftCorner.getX() + 2; //subtracting and extra row/column for indexes
         int height = upperRightCorner.getY() - lowerLeftCorner.getY() + 2;
 
 
@@ -643,15 +594,13 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
         for(MapSection section: positionSectionMap.values()) {
             Object objectAtSection = section.objectAt();
             if (objectAtSection == null) continue;
-            if (! (objectAtSection instanceof IMapElement)) continue;
-            IMapElement IMapElementAtSection = (IMapElement) objectAtSection;
+            if (! (objectAtSection instanceof IMapElement IMapElementAtSection)) continue;
             addGuiElementBoxToGridPane(gridPane, upperRightCorner, lowerLeftCorner, IMapElementAtSection);
         }
     }
 
     private void addAnimalsWithDominatingGenotypeToGridPane(GridPane gridPane, AbstractWorldMap map, Vector2d upperRightCorner, Vector2d lowerLeftCorner) throws FileNotFoundException {
         Map<Vector2d, MapSection> positionSectionMap = map.getPositionSectionMap();
-        int numberOfAnimalsAdded = 0;
         int[] dominatingGenotype = map.getDominatingGenotype();
         for(MapSection section: positionSectionMap.values()) {
             Animal animalToShow;
@@ -663,30 +612,26 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
             else continue;
 
             if (animalToShow == null) continue;
-            numberOfAnimalsAdded += 1;
             IMapElement IMapElementAtSection = animalToShow;
             addGuiElementBoxToGridPane(gridPane, upperRightCorner, lowerLeftCorner, IMapElementAtSection);
-        }
-        if(numberOfAnimalsAdded == 0){
-            System.out.println("cos nie tak");
         }
     }
 
     private void addRowAndColumnDescriptionsToGridPane(GridPane gridPane, Vector2d upperRightCorner, Vector2d lowerLeftCorner, int width, int height) {
         Label description = new Label("y/x");
         gridPane.add(description, 0, 0);
-        gridPane.setHalignment(description, HPos.CENTER);
+        GridPane.setHalignment(description, HPos.CENTER);
 
         for(int i = 0; i < height - 1 ; i++){
             Label number = new Label(String.valueOf(upperRightCorner.getY() - i));
             gridPane.add(number, 0, i+1);
-            gridPane.setHalignment(number, HPos.CENTER);
+            GridPane.setHalignment(number, HPos.CENTER);
         }
 
         for(int i = 0; i < width - 1; i++){
             Label number = new Label(String.valueOf(lowerLeftCorner.getX() + i));
             gridPane.add(number, i+1, 0);
-            gridPane.setHalignment(number, HPos.CENTER);
+            GridPane.setHalignment(number, HPos.CENTER);
         }
     }
 
@@ -701,17 +646,6 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
             gridPane.getRowConstraints().add(row);
         }
     }
-
-
-
-
-//    private void updateIMapElementsAtGridPane(Vector2d upperRightCorner, Vector2d lowerLeftCorner) throws FileNotFoundException {
-//        Map<Vector2d, IMapElement> positionElementMap = map.getPositionElementMap();
-//
-//        for(IMapElement element: positionElementMap.values()) {
-//            addGuiElementBoxToGridPane(upperRightCorner, lowerLeftCorner, element);
-//        }
-//    }
 
     private void addGuiElementBoxToGridPane(GridPane gridPane, Vector2d upperRightCorner, Vector2d lowerLeftCorner, IMapElement element) throws FileNotFoundException {
         Vector2d elementPosition = element.getPosition();
@@ -814,9 +748,8 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
 
         addRowAndColumnDescriptionsToGridPane(gridPane, upperRightCorner, lowerLeftCorner, width, height);
 
-//        synchronized (LockObject.INSTANCE) {
-            addAbstractWorldMapElementsToGridPane(gridPane, map, upperRightCorner, lowerLeftCorner);
-//        }
+        addAbstractWorldMapElementsToGridPane(gridPane, map, upperRightCorner, lowerLeftCorner);
+
 
         gridPane.setGridLinesVisible(true);
     }
@@ -838,9 +771,7 @@ public class App extends Application implements IDayObserver, IMagicEventObserve
 
         addRowAndColumnDescriptionsToGridPane(gridPane, upperRightCorner, lowerLeftCorner, width, height);
 
-//        synchronized (LockObject.INSTANCE) {
         addAnimalsWithDominatingGenotypeToGridPane(gridPane, map, upperRightCorner, lowerLeftCorner);
-//        }
 
         gridPane.setGridLinesVisible(true);
     }
