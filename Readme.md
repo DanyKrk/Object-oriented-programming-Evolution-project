@@ -2,7 +2,7 @@ Projekt nr 1 - generator ewolucyjny
 Niniejsza treść została zaadaptowana na podstawie opisu oraz ilustracji przygotowanych przez Wojciecha Kosiora. Inspiracją dla niego była z kolei książka "Land of Lisp" Conrada Barskiego, który zaś zainspirował się artykułem w "Scientific American" :-)
 
 
-Cel projektu
+Cel projektu: 
 Stwórzmy grę! Nie będzie to jednak gra, w którą my gramy. Zamiast tego będzie to świat, który ewoluuje na naszych oczach! Stworzymy środowisko stepów i dżungli ze zwierzętami, które biegają, buszują w zaroślach, jedzą i rozmnażają się. A po kilka milionach lat zobaczymy, że wyewoluowały w różne gatunki!
 
 
@@ -16,7 +16,6 @@ Nasze zwierzęta, które są roślinożercami, będą przemierzały ten świat w
 Rośliny będą wyrastały w losowych miejscach, ale ich koncentracja będzie większa w dżungli niż na stepie. Codziennie w naszym świecie pojawią się dwie nowe rośliny – jedna w każdej ze stref.
 
 Anatomia zwierzęcia
-
 
 Musimy śledzić kilka cech każdego zwierzęcia. Po pierwsze, zarówno w przypadku rośliny jak i tych, którzy je zjadają, musimy znać koordynaty x i y. Wskazują nam one, gdzie dane zwierzę lub roślina jest na mapie. Musimy także wiedzieć, ile energii ma dane zwierzę. To Darwinowska gra o przetrwanie, więc jeśli zwierzątko nie zdoła zdobyć odpowiedniej ilości pożywienia, będzie głodować i umrze. Atrybut "energia" mówi nam, ile dni zostało jeszcze danemu zwierzątku. Musi ono koniecznie znaleźć więcej jedzenia, zanim zapas energii się wyczerpie. Musimy także pamiętać, w którą stronę zwrócone jest zwierzę. Jest to ważne, ponieważ będzie ono przechodzić na sąsiedni kwadracik na mapie świata każdego dnia. Jest osiem różnych możliwych obrotów.
 
@@ -47,7 +46,8 @@ rozmnażanie zwierząt (rozmnażają się zawsze dwa zwierzęta o najwyższej en
 dodanie nowych roślin do mapy.
 Oczywiście na początku symulacji na środku świata umieszczamy kilka zwierząt (Adam/Ewa). Liczba zwierząt na początku jest parametrem symulacji.
 
-Szczegółowe wymagania
+Szczegółowe wymagania:
+
 Program ma wyświetlać animację pokazującą pozycje zwierząt, ich energię w dowolnej formie (np. koloru) oraz pozycje roślin.
 Animacja ma być realizowana z użyciem graficznego interfejsu użytkownika z wykorzystaniem biblioteki JavaFX.
 Program musi umożliwiać zatrzymywanie oraz wznawianie animacji w dowolnym momencie (niezależnie dla każdej mapy - patrz niżej).
